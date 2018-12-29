@@ -1,0 +1,461 @@
+﻿/* AppForm */
+.initializeAppTable {
+	width: 100%;
+	height: 80%;
+	margin: 0px;
+	padding: 0px;
+	border: 0px;
+}
+
+.initializeAppTable {
+	width: 100%;
+	height: 80%;
+	margin: 0px;
+	padding: 0px;
+	border: 0px;
+}
+
+	.initializeAppTable td {
+		text-align: center;
+		vertical-align: middle;
+	}
+
+.initializeAppText {
+	text-align: center;
+	font-size: 14px;
+}
+
+.errorAppText {
+	text-align: center;
+	font-size: 14px;
+}
+
+	.errorAppText .message {
+		color: red;
+	}
+
+/* ToolBar */
+div.toolbar {
+	position: relative;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(white, #eeeeee);
+	/*background-color: #eeeeee;*/
+}
+
+.toolbar > .panel {
+	position: relative;
+	float: left;
+	height: 100%;
+	width: 200px;
+	border-right: solid 1px #CCC;
+	border-left: solid 1px white;
+	overflow: hidden;
+	box-sizing: border-box;
+}
+
+	.toolbar > .panel > .button {
+		position: absolute;
+		padding-top: 4px;
+		padding-left: 4px;
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+
+		.toolbar > .panel > .button > .buttonContent {
+			position: relative;
+			width: 100%;
+			height: 100%;
+			cursor: pointer;
+			overflow: hidden;
+			box-sizing: border-box;
+			border: solid 1px transparent;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+		}
+
+			.toolbar > .panel > .button > .buttonContent:hover {
+				background-color: #ffe9a2;
+				border: solid 1px #ffc280;
+			}
+
+		.toolbar > .panel > .button > .pushed {
+			background-color: #FFD86C;
+			border: solid 1px #C2821B !important;
+		}
+
+		.toolbar > .panel > .button > .buttonContent > .iconLarge {
+			margin-left: 22px;
+			margin-top: 5px;
+		}
+
+		.toolbar > .panel > .button > .buttonContent > .iconSmall {
+			margin: 2px;
+			position: absolute;
+			left: 2px;
+			top: 2px;
+		}
+
+		.toolbar > .panel > .button > .buttonContent > .label {
+			position: absolute;
+			height: 20px;
+		}
+
+		.toolbar > .panel > .button > .buttonContent > .labelLarge {
+			width: 100%;
+			left: 0px;
+			top: 42px;
+			text-align: center;
+			white-space: normal;
+		}
+
+		.toolbar > .panel > .button > .buttonContent > .labelSmall {
+			left: 28px;
+			top: 1px;
+			text-align: left;
+		}
+
+		.toolbar > .panel > .button > .buttonContent > .dropDownIndicator {
+			position: absolute;
+			right: 1px;
+			bottom: 1px;
+		}
+
+		.toolbar > .panel > .button > div.disabled {
+			color: silver;
+		}
+
+			.toolbar > .panel > .button > div.disabled > img {
+				opacity: 0.4;
+			}
+
+			.toolbar > .panel > .button > div.disabled:hover {
+				background-color: transparent;
+				border: solid 1px transparent;
+				cursor: default;
+			}
+
+		.toolbar > .panel > .button > .comboContent {
+			position: relative;
+			width: 100%;
+			height: 100%;
+			overflow: hidden;
+			box-sizing: border-box;
+		}
+
+			.toolbar > .panel > .button > .comboContent > .label {
+				margin-top: 2px;
+			}
+
+			.toolbar > .panel > .button > .comboContent > .combo {
+				margin-top: 5px;
+				width: 105px;
+			}
+
+
+.toolbar .panel > .label {
+	position: absolute;
+	bottom: 0px;
+	width: 100%;
+	color: #777777;
+	text-align: center;
+	font-size: 10px;
+}
+
+/* Page */
+.page {
+	width: 100%;
+	height: 100%;
+}
+
+/* Dialog and ModalForm */
+.dialog {
+	background: white;
+	/*border-radius: 10px; this dramatically slows the DOM function scrollTop()*/
+	overflow: auto;
+	z-index: 10;
+	max-height: 75%;
+	position: absolute;
+}
+
+.dialogOuterArea {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	z-index: 1000;
+	display: flex;
+	justify-content: center;
+}
+
+	.dialogOuterArea.dim {
+		background: #555555;
+		z-index: auto;
+	}
+
+/* Please Wait Dialog */
+.pleaseWait .pleaseWaitTable {
+	width: 100%;
+	height: 80%;
+	margin: 0px;
+	padding: 0px;
+	border: 0px;
+	position: relative;
+	z-index: 1000;
+}
+
+	.pleaseWait .pleaseWaitTable td {
+		text-align: center;
+		vertical-align: middle;
+	}
+
+.pleaseWaitText {
+	width: 100%;
+	text-align: center;
+	text-align: center;
+	font-size: 12px;
+	text-decoration: underline;
+}
+
+/* Message Box */
+.messageBox .title {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	width: 100%;
+	padding: 10px;
+	border-bottom: solid 1px silver;
+	text-align: center;
+	overflow: auto;
+}
+
+.messageBox .button {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	width: 100%;
+	padding: 10px;
+	border-bottom: solid 1px silver;
+	text-align: center;
+	cursor: pointer;
+	color: #0066CC;
+}
+
+/* DropDown */
+.dropDown {
+	border: solid 1px silver;
+	min-width: 100px;
+	max-width: 100%;
+}
+
+	.dropDown .dropDownItem {
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
+		width: 100%;
+		padding: 3px;
+		padding-left: 10px;
+		cursor: pointer;
+	}
+
+		.dropDown .dropDownItem:hover {
+			background: #ffe9a2
+		}
+
+.droppedDown {
+	background: #ffd5a1;
+	border: solid 1px #ffc280;
+}
+
+/* Grid */
+/* 
+    nevyhody flex:
+
+    box-sizing: border-box is ignored
+    realy hard to achieve flexible row design with two scrolling containers one above each other
+ */
+div.grid {
+	border: solid 1px silver;
+	box-sizing: border-box;
+	overflow: auto;
+	display: flex;
+	flex-direction: column;
+}
+
+	div.grid > .header {
+		min-height: 28px;
+		width: 100%;
+		position: static;
+		overflow: hidden;
+		display: flex;
+		flex-direction: row;
+		flex: 0 0 auto;
+		background: linear-gradient(white, #eeeeee);
+	}
+
+	div.grid > div.header > div.headerCell {
+		border-right: solid 1px #bbbbbb;
+		border-bottom: solid 1px #bbbbbb;
+		cursor: default;
+		box-sizing: border-box;
+		overflow: hidden;
+		position: relative;
+	}
+
+		div.grid > div.header > div.headerCell > div {
+			padding: 5px 15px;
+		}
+
+		div.grid > div.header > div.headerCell:last-child {
+			border-right-width: 0px;
+		}
+
+	div.grid > div.header > div.sortable {
+		cursor: pointer;
+	}
+
+		div.grid > div.header > div.sortable:hover {
+			cursor: pointer;
+			background: linear-gradient(#eeeeee, #dddddd);
+		}
+
+	div.grid img.sortArrow {
+		position: absolute;
+		top: 8px;
+		left: 1px;
+	}
+
+	div.grid > .footer {
+		min-height: 28px;
+		width: 100%;
+		position: static;
+		overflow: hidden;
+		display: flex;
+		flex-direction: row;
+		flex: 0 0 auto;
+		flex-wrap: wrap;
+		background: linear-gradient(#eeeeee, white);
+		border-top: solid 1px #bbbbbb;
+	}
+
+		div.grid > .footer > .pageButton {
+			flex: 0 0 25px;
+			cursor: pointer;
+			text-align: center;
+			padding-top: 5px;
+		}
+
+			div.grid > .footer > .pageButton:hover {
+				background: linear-gradient(#eeeeee, #dddddd);
+			}
+
+		div.grid > .footer > div.disabled {
+			cursor: default;
+			color: #dddddd;
+		}
+
+			div.grid > .footer > div.disabled:hover {
+				background: inherit;
+			}
+
+		div.grid > .footer > .pageLabel {
+			flex: 1 1 auto;
+			text-align: center;
+			padding-top: 5px;
+		}
+
+		div.grid > .footer input {
+			width: 4em;
+			text-align: center;
+		}
+
+
+	div.grid > .main {
+		/*height: calc(100% - 28px);*/
+		position: relative;
+		width: 100%;
+		overflow: auto;
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+	}
+
+	div.grid > div.main div.row {
+		width: 100%;
+		overflow: hidden;
+		display: flex;
+		flex-direction: row;
+		flex: 0 0 auto;
+		min-height: 28px;
+		box-sizing: border-box;
+		cursor: pointer;
+	}
+
+		div.grid > div.main div.row:nth-child(odd) {
+			background: #f8f8f8;
+		}
+
+		div.grid > div.main div.row.selected {
+			background: #9ecfe9;
+		}
+
+		div.grid > div.main div.row:hover {
+			background: #dcf3ff;
+		}
+
+		div.grid > div.main div.row.selected:hover {
+			background: #9ecfe9;
+		}
+
+	div.grid > div.main div.rowCell {
+		border-right: solid 1px #dddddd;
+		border-bottom: solid 1px #dddddd;
+		box-sizing: border-box;
+		overflow: hidden;
+		position: relative;
+	}
+
+		div.grid > div.main div.rowCell:last-child {
+			border-right-width: 0px;
+		}
+
+	div.grid > div.main div.row div.standard {
+		padding: 5px;
+		height: 100%;
+		box-sizing: border-box;
+	}
+
+	div.grid > div.main div.group {
+		padding: 5px;
+		background: #efefef;
+		border-bottom: solid 1px #dddddd;
+		width: 100%;
+		overflow: hidden;
+		min-height: 28px;
+		cursor: pointer;
+		box-sizing: border-box;
+	}
+
+		div.grid > div.main div.group:nth-child(odd) {
+			background: #efefef;
+		}
+
+		div.grid > div.main div.group:hover {
+			background: #d5e9f7;
+		}
+
+		div.grid > div.main div.group.selected {
+			background: #9ecfe9;
+		}
+
+	div.grid .commandLink {
+		text-decoration: underline;
+		cursor: pointer;
+	}
+
+	div.grid span.commandLink {
+		color: blue;
+	}

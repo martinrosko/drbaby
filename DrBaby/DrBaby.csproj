@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{8B108ECB-0C66-49BA-8AB9-97EB375C9F2F}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin</OutputPath>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <Use64BitIISExpress />
+  </PropertyGroup>
+  <ItemGroup>
+    <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Images\Medicament.png" />
+    <Content Include="index-release.html" />
+    <Content Include="Publish\publish-mcrm.js" />
+    <Content Include="Styles\application.css" />
+    <Content Include="index.html" />
+    <Content Include="Libraries\es6_shim_min.js" />
+    <Content Include="Libraries\jquery-1.7.1.min.js" />
+    <Content Include="Libraries\jquery-ui.min.css" />
+    <Content Include="Libraries\jquery-ui.min.js" />
+    <Content Include="Libraries\JSBridge.js" />
+    <Content Include="Libraries\knockout-3.4.2.js" />
+    <Content Include="Libraries\knockout_debug.js" />
+    <Content Include="Libraries\moment_min.js" />
+    <Content Include="Resco\Controls\Styles\controls.css" />
+    <Content Include="web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="Model\activity.ts" />
+    <TypeScriptCompile Include="Model\dose.ts" />
+    <TypeScriptCompile Include="Model\feeding.ts" />
+    <TypeScriptCompile Include="Model\sleep.ts" />
+    <TypeScriptCompile Include="Resco\Controls\Dialogs\dialog.ts" />
+    <TypeScriptCompile Include="Resco\Controls\Dialogs\dropDownDialog.ts" />
+    <TypeScriptCompile Include="Resco\Controls\Dialogs\messageBox.ts" />
+    <TypeScriptCompile Include="Resco\Controls\Dialogs\pleaseWaitDialog.ts" />
+    <TypeScriptCompile Include="UI\appForm.ts" />
+    <TypeScriptCompile Include="application.ts" />
+    <TypeScriptCompile Include="UI\basePage.ts" />
+    <TypeScriptCompile Include="Data\IAppService.ts" />
+    <TypeScriptCompile Include="Data\WebService\baseAppService.ts" />
+    <TypeScriptCompile Include="Data\WebService\MobileCrm\mcrmAppService.ts" />
+    <TypeScriptCompile Include="Data\WebService\serviceFactory.ts" />
+    <TypeScriptCompile Include="Data\WebService\Xrm\xrmAppService.ts" />
+    <TypeScriptCompile Include="Libraries\es6-shim.d.ts" />
+    <TypeScriptCompile Include="Libraries\jquery.d.ts" />
+    <TypeScriptCompile Include="Libraries\jquery.ui.d.ts" />
+    <TypeScriptCompile Include="Libraries\common.d.ts" />
+    <TypeScriptCompile Include="Libraries\JSBridge.d.ts" />
+    <TypeScriptCompile Include="Libraries\knockout.d.ts" />
+    <TypeScriptCompile Include="Libraries\moment.d.ts" />
+    <TypeScriptCompile Include="publish.ts" />
+    <TypeScriptCompile Include="Resco\bindingList.ts" />
+    <TypeScriptCompile Include="Resco\common.ts" />
+    <TypeScriptCompile Include="Resco\Controls\interfaces.ts" />
+    <TypeScriptCompile Include="Resco\Controls\koEngine.ts" />
+    <TypeScriptCompile Include="Resco\convert.ts" />
+    <TypeScriptCompile Include="Resco\Data\baseTypes.ts" />
+    <TypeScriptCompile Include="Resco\Data\fetchXml.ts" />
+    <TypeScriptCompile Include="Resco\Data\WebService\crmTypes.ts" />
+    <TypeScriptCompile Include="Resco\Data\WebService\fetchRequestParams.ts" />
+    <TypeScriptCompile Include="Resco\Data\WebService\httpRequest.ts" />
+    <TypeScriptCompile Include="Resco\Data\WebService\ICrmService.ts" />
+    <TypeScriptCompile Include="Resco\Data\WebService\IMetadataService.ts" />
+    <TypeScriptCompile Include="Resco\Data\WebService\JSBridge\mobileCrmService.ts" />
+    <TypeScriptCompile Include="Resco\Data\WebService\simpleLoginInfo.ts" />
+    <TypeScriptCompile Include="Resco\Data\WebService\Xrm\xrmMetadataService.ts" />
+    <TypeScriptCompile Include="Resco\Data\WebService\Xrm\xrmService.ts" />
+    <TypeScriptCompile Include="Resco\Data\xml.ts" />
+    <TypeScriptCompile Include="Resco\event.ts" />
+    <TypeScriptCompile Include="Resco\exception.ts" />
+    <TypeScriptCompile Include="Resco\logger.ts" />
+    <TypeScriptCompile Include="UI\Feeding\feedingPage.ts" />
+    <TypeScriptCompile Include="UI\Main\mainPage.ts" />
+    <TypeScriptCompile Include="UI\Sleep\sleepPage.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Publish\generateMinimizeBat.js" />
+    <Content Include="Publish\publish-mcmr.bat" />
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>DrBaby</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\WebApplications\Microsoft.WebApplication.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\WebApplications\Microsoft.WebApplication.targets')" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>1201</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:1201/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>True</TypeScriptSourceMap>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
+    <TypeScriptModuleKind />
+    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
+    <TypeScriptOutFile />
+    <TypeScriptOutDir />
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptMapRoot />
+    <TypeScriptSourceRoot />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TypeScriptRemoveComments>true</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>false</TypeScriptSourceMap>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
+</Project>

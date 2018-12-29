@@ -1,0 +1,42 @@
+body {
+	margin: 0px;
+	padding: 0px;
+	font-size: 14px;
+	font-family: 'Segoe UI SemiLight', sans-serif;
+	background: silver;
+}
+
+div.main {
+	text-align: center;
+}
+
+.clockBig {
+	font-weight: bold;
+	font-size: 96px;
+}
+
+.clockMedium {
+	font-weight: bold;
+	font-size: 48px;
+}
+
+.clockSmall {
+	font-weight: bold;
+	font-size: 32px;
+}
+
+.action {
+	background: #aaaaaa;
+	border: solid 2px black;
+	border-radius: 15px;
+	padding: 10px;
+	text-align: center;
+	margin: 0px 10px;
+}
+
+.buttonBig {
+	height: 75px;
+	padding-top: 25px;
+	font-size: 32px;
+	font-weight: bold;
+}
