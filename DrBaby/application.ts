@@ -11,6 +11,7 @@
 		static userInfo: UserInfo;
 		static now: KnockoutObservable<number> = ko.observable<number>(0);
 		static actualHour: KnockoutComputed<number>;
+		static wideScreen: KnockoutObservable<boolean>;
 
 		public static globalTimers: GlobalTimer[] = [];
 
@@ -59,6 +60,7 @@
 					Application.now(Date.now());
 				}, 1000);
 				Application.now(Date.now());
+				Application.wideScreen = ko.observable<boolean>(true);
 
 				Application.actualHour = ko.computed<number>(() => {
 					var now = Application.now();

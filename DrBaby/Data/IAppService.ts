@@ -4,6 +4,12 @@
 		saveSleep: (sleep: Model.Sleep) => Promise<void>;
 		loadFeedings: (lastX: number) => Promise<Model.Feeding[]>;
 		saveFeeding: (feeding: Model.Feeding) => Promise<void>;
-		loadDayActivities: (date: Date) => Promise<Model.Activity[]>;
+		saveDiaper: (diaper: Model.Diaper) => Promise<void>;
+		loadDiapers: (lastX: number) => Promise<Model.Diaper[]>;
+		saveEvent: (diaper: Model.Event) => Promise<void>;
+		loadActivitiesBetween: (startDate: Date, endDate: Date) => Promise<Model.Activity[]>;
+		deleteActivity: (activity: Model.Activity) => Promise<boolean>;
+		saveNote: (note: Model.Note) => Promise<void>;
+		deleteNote: (id: Resco.Data.Guid) => Promise<boolean>;
 	}
 }

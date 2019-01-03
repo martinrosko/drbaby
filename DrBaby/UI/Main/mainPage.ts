@@ -11,7 +11,7 @@
 		public activeFeedingDuration: KnockoutComputed<string>;
 		public feedingActionLabel: KnockoutComputed<string>;
 		public actualTime: KnockoutComputed<string>;
-		public timeLine: KnockoutObservableArray<ActivityViewsDay>;
+		public timeLine: KnockoutObservableArray<ActivityViewList>;
 		public selectedActivity: KnockoutObservable<ActivityView>;
 		public daysSinceBirth: number;
 
@@ -75,14 +75,27 @@
 				var lastFeeding = this.lastFeeding();
 				if (lastFeeding) {
 					var lastWasLeft = lastFeeding.breast() === Model.Breast.Left;
-					return "Feed from " + (lastWasLeft ? "right" : "left");
+					return "Feed " + (lastWasLeft ? "right" : "left");
 				}
 				return "Feed";
 			}, this);
 
-			this.timeLine = ko.observableArray<ActivityViewsDay>([]);
-			this.timeLine.push(new ActivityViewsDay(this, new Date()));
-			this.timeLine.push(new ActivityViewsDay(this, moment().subtract('day', 1).toDate()));
+			this.timeLine = ko.observableArray<ActivityViewList>([]);
+			var mmtNow = moment().add("hours", 2).startOf("hour");
+			var mmtYesterday = moment(mmtNow).subtract("day", 1).startOf("day");
+			if (mmtNow.get("hour") <= 7) {
+				this.timeLine.push(new ActivityViewList(this, moment(mmtYesterday).set("hour", 19).toDate(), mmtNow.toDate(), false));
+				this.timeLine.push(new ActivityViewList(this, moment(mmtYesterday).set("hour", 7).toDate(), moment(mmtYesterday).set("hour", 19).toDate(), true));
+			}
+			else if (mmtNow.get("hour") >= 19) {
+				this.timeLine.push(new ActivityViewList(this, moment(mmtNow).set("hour", 19).toDate(), mmtNow.toDate(), false));
+				this.timeLine.push(new ActivityViewList(this, moment(mmtNow).set("hour", 7).toDate(), moment(mmtNow).set("hour", 19).toDate(),true));
+			}
+			else {
+				this.timeLine.push(new ActivityViewList(this, moment(mmtNow).set("hour", 7).toDate(), mmtNow.toDate(), true));
+				this.timeLine.push(new ActivityViewList(this, moment(mmtYesterday).set("hour", 19).toDate(), moment(mmtNow).set("hour", 7).toDate(), false));
+
+			}
 
 			this.selectedActivity = ko.observable<ActivityView>();
 		}
@@ -106,47 +119,97 @@
 						this.activeFeeding(lastFeedings[0]);					
 				}
 
+				var activities = await service.loadActivitiesBetween(this.timeLine()[this.timeLine().length - 1].fromDate, new Date());
 				for (var activityDay of this.timeLine()) {
-					await this._loadDay(activityDay, service);
+					activityDay.loadActivities(activities);
 				}
 				this.m_bIsLoaded = true;
 			}
 		}
 
-		private async _loadDay(activityDay: ActivityViewsDay, service?: Data.WebService.IAppService): Promise<void> {
-			if (!service)
-				service = Data.WebService.ServiceFactory.instance.connect();
-
-			var activities = await service.loadDayActivities(activityDay.date);
-			activityDay.loadActivities(activities.filter(a => a.endedOn()));
+		private _loadDay(day: ActivityViewList, activities: Model.Activity[]): void {
+			day.loadActivities(activities.filter(a => (a instanceof Model.Diaper) || a.endedOn()));
 		}
 
 		public async addDay(): Promise<void> {
-			var lastDay = this.timeLine()[this.timeLine().length - 1];
-			var activityDay = new ActivityViewsDay(this, moment(lastDay.date).subtract('day', 1).toDate());
-			await this._loadDay(activityDay);
+			var service = Data.WebService.ServiceFactory.instance.connect();
+			var lastTimeLine = this.timeLine()[this.timeLine().length - 1];
+			var toDate = moment(lastTimeLine.fromDate).toDate();
+			var fromDate = moment(lastTimeLine.fromDate).subtract("hour", 12).toDate();
+
+			var activities = await service.loadActivitiesBetween(fromDate, toDate);
+
+			var activityDay = new ActivityViewList(this, fromDate, toDate, !lastTimeLine.isDay);
+			activityDay.loadActivities(activities);
 			this.timeLine.push(activityDay);
+		}
+
+		public async addEvent(): Promise<void> {
+			var startedOn = new Date();
+
+			this.messageBox(index => {
+				if (index < 2) {
+					this._addDiaper(startedOn, index === 0);
+				}
+				if (index === 2) {
+					this._addNote(startedOn);
+				}
+			}, this, "Event", false, "Cancel", ["Poop", "Pee", "Note", "Photo"]);
+		}
+
+		private get currentTimeLine(): ActivityViewList {
+			return this.timeLine().firstOrDefault(tl => tl.currentTime() >= 0);
+		}
+
+		private async _addDiaper(startedOn: Date, isPoo: boolean): Promise<void> {
+			var diaper = new Model.Diaper();
+			diaper.startedOn(startedOn)
+			diaper.load(isPoo ? Model.DiaperLoad.Poop : Model.DiaperLoad.Pee);
+
+			this.messageBox(index => {
+				diaper.amount(10000 + index);
+
+				var service = Data.WebService.ServiceFactory.instance.connect();
+				service.saveDiaper(diaper).then(() => {
+					this.currentTimeLine.addActivity(diaper);
+				});
+			}, this, "Amount", false, "Cancel", ["Small", "Normal", "Huge", "King"]);
+		}
+
+		private async _addNote(when: Date): Promise<void> {
+			var notePage = new NotePage(AppForm.instance);
+			notePage.saved.add(this, (any, e) => {
+				var noteText = notePage.text();
+				if (noteText) {
+					var event = new Model.Event();
+					event.startedOn(when);
+					var note = new Model.Note();
+					note.text(noteText);
+					event.addNote(note);
+					var service = Data.WebService.ServiceFactory.instance.connect();
+					service.saveEvent(event);
+					this.currentTimeLine.addActivity(event);
+				}
+			});
+			notePage.show();
 		}
 
 		public startNewSleep(): void {
 			var startedOn = new Date();
-			this.messageBox(index => {
-				var newSleep = new Model.Sleep();
-				newSleep.lullingStartedOn(startedOn);
-				newSleep.place(<Model.SleepPlace>index);
+			var newSleep = new Model.Sleep();
+			newSleep.lullingStartedOn(startedOn);
 
-				this.activeSleep(newSleep);
+			this.activeSleep(newSleep);
 
-				//var sleepPage = new SleepPage(AppForm.instance, <Model.SleepPlace>index, startedOn);
-				//sleepPage.saved.add(this, (sender, args) => {
-				//	var service = Data.WebService.ServiceFactory.instance.connect();
-				//	service.saveSleep(sleepPage.sleep).then(() => {
-				//		this.lastSleep(sleepPage.sleep);
-				//		this.timeLine()[0].addActivity(sleepPage.sleep);
-				//	});
-				//});
-				//sleepPage.show();
-			}, this, "Place", false, "Cancel", ["Cot", "Scarf", "Carrier", "Stroller", "Couch", "Bed", "Other"]);
+			//var sleepPage = new SleepPage(AppForm.instance, <Model.SleepPlace>index, startedOn);
+			//sleepPage.saved.add(this, (sender, args) => {
+			//	var service = Data.WebService.ServiceFactory.instance.connect();
+			//	service.saveSleep(sleepPage.sleep).then(() => {
+			//		this.lastSleep(sleepPage.sleep);
+			//		this.timeLine()[0].addActivity(sleepPage.sleep);
+			//	});
+			//});
+			//sleepPage.show();
 		}
 
 		public async finishActiveSleep(): Promise<void> {
@@ -155,14 +218,14 @@
 
 			this.messageBox(index => {
 				activeSleep.endedOn(wokeUpOn);
-				activeSleep.quality(<Model.SleepQuality>(1 - index));
+				activeSleep.place(<Model.SleepPlace>(index));
 				var service = Data.WebService.ServiceFactory.instance.connect();
 				service.saveSleep(activeSleep).then(() => {
 					this.lastSleep(activeSleep);
 					this.timeLine()[0].addActivity(activeSleep);
 					this.activeSleep(undefined);
 				});
-			}, this, "Kvalita spanku", true, "Spat", ["Dobry", "Normal", "Zly"]);
+			}, this, "Place", false, "Cancel", ["Cot", "Scarf", "Carrier", "Stroller", "Couch", "Bed", "rms", "Car", "Other"]);
 		}
 
 		public fallAsleep(when: Date): void {
@@ -230,9 +293,17 @@
 				if (selActivity)
 					selActivity.selected(false);
 
-				activity.selected(true);
+				if (activity)
+					activity.selected(true);
 				this.selectedActivity(activity);
 			}
+		}
+
+		public async deleteActivity(activity: Model.Activity): Promise<void> {
+			var service = Data.WebService.ServiceFactory.instance.connect();
+			var deleted = await service.deleteActivity(activity);
+			if (deleted)
+				this.timeLine().forEach(tl => tl.removeActivity(activity), this);
 		}
 	}
 
@@ -246,56 +317,106 @@
 		}
 	}
 
-	export class ActivityViewsDay {
-		public date: Date;
+	export class ActivityViewList {
+		public fromDate: Date;
+		public toDate: Date;
 		public activities: KnockoutObservableArray<ActivityView>;
-		public hours: KnockoutObservableArray<TimeLineSlot>;
+		public slots: KnockoutObservableArray<TimeLineSlot>;
+		public isDay: boolean;
 		public page: MainPage;
+		public currentTime: KnockoutObservable<number>;
 
-		constructor(page: MainPage, date?: Date) {
+		constructor(page: MainPage, fromDate: Date, toDate: Date, isDay: boolean) {
 			this.page = page;
-
-			this.date = date ? date : new Date();
+			this.fromDate = fromDate;
+			this.toDate = toDate;
 			this.activities = ko.observableArray<ActivityView>([]);
-			this.hours = ko.observableArray<TimeLineSlot>([]);
+			this.isDay = isDay;
 
-			if (moment(date).startOf('day').isSame(moment().startOf('day'))) {
-				Application.actualHour.subscribe(hour => this._generateTimelineHours(hour), this);
-				this._generateTimelineHours(Application.actualHour());
+			var slots: TimeLineSlot[] = [];
+
+			var mmtFrom = moment(this.fromDate).startOf("hour").subtract("hour", 1);
+			var mmtTo = moment(this.toDate).startOf("hour").subtract("hour", 1);
+
+			while (!mmtTo.isSame(mmtFrom)) {
+				slots.push(new TimeLineSlot(mmtTo.format("HH"), isDay));
+				mmtTo.subtract("hour", 1);
 			}
-			else {
-				this._generateTimelineHours(23);
-			}
+
+			this.slots = ko.observableArray<TimeLineSlot>(slots);
+
+			this.currentTime = ko.computed<number>(() => {
+				var now = Application.now();
+				if (this.dateInViewsRange(new Date())) {
+					var mmtBaseLine = moment(this.fromDate).startOf("hour");
+					return moment().diff(mmtBaseLine, "minutes");
+				}
+				return -1;
+			}, this);
+
+			//if (moment(date).startOf('day').isSame(moment().startOf('day'))) {
+			//	Application.actualHour.subscribe(hour => this._generateTimelineHours(hour), this);
+			//	this._generateTimelineHours(Application.actualHour());
+			//}
+			//else {
+			//	this._generateTimelineHours(23);
+			//}
 		}
 
 		private _generateTimelineHours(max: number): void {
 			var slots: TimeLineSlot[] = [];
 			for (var i = max; i >= 0; i--)
 				slots.push(new TimeLineSlot(i.toString(), i < 18 && i > 5));
-			this.hours(slots);
+			this.slots(slots);
 		}
 
 		public loadActivities(activities: Model.Activity[]): void {
-			var sortedActivities = activities.sort((a1, a2) => {
-				return moment(a1.startedOn()).diff(moment(a2.startedOn()));
-			});
+			var relevantActivities = activities.filter(a => this._activityPredicate(a));
+			var prevSleep: Model.Sleep;
 
-			for (let activity of sortedActivities) {
+			for (let activity of relevantActivities) {
 				this.addActivity(activity);
 			}
+		}
+
+		private _activityPredicate(activity: Model.Activity): boolean {
+			if (activity.endedOn() || (activity instanceof Model.Diaper)) {
+				if (this.dateInViewsRange(activity.startedOn()) || this.dateInViewsRange(activity.endedOn()))
+					return true;
+			}
+			return false;
+		}
+
+		public dateInViewsRange(date: Date): boolean {
+			var mmt = moment(date);
+			if ((mmt.isSame(this.fromDate) || mmt.isAfter(this.fromDate)) && (mmt.isSame(this.toDate) || mmt.isBefore(this.toDate)))
+				return true;
+
+			return false;
 		}
 
 		public addActivity(activity: Model.Activity): void {
 			let activityView: ActivityView;
 
 			if (activity instanceof Model.Sleep)
-				activityView = new SleepView(this, activity, this.date);
+				activityView = new SleepView(this, activity, this.fromDate);
 			else if (activity instanceof Model.Feeding)
-				activityView = new FeedingView(this, activity, this.date);
+				activityView = new FeedingView(this, activity, this.fromDate);
+			else if (activity instanceof Model.Diaper)
+				activityView = new DiaperView(this, activity, this.fromDate);
+			else if (activity instanceof Model.Event)
+				activityView = new EventView(this, activity, this.fromDate);
 			else
-				activityView = new ActivityView(this, activity, this.date);
+				activityView = new ActivityView(this, activity, this.fromDate);
 
 			this.activities.push(activityView);
+		}
+
+		public removeActivity(activity: Model.Activity): void {
+			var activities = this.activities();
+			var index = activities.findIndex(aView => aView.activity === activity || (aView.activity.id && activity.id && activity.id.Value === aView.activity.id.Value));
+			if (index >= 0)
+				this.activities.splice(index, 1);
 		}
 	}
 
@@ -303,57 +424,186 @@
 		public start: KnockoutObservable<number>;
 		public end: KnockoutObservable<number>;
 		public duration: KnockoutObservable<number>;
-		public contentTemplateName: string;
+		public contentTemplateName: KnockoutComputed<string>;
 		public activity: Model.Activity;
 		public selected: KnockoutObservable<boolean>;
-		public parent: ActivityViewsDay;
+		public showInfoBubble: boolean;
+		public parent: ActivityViewList;
+		public previousActivity: KnockoutObservable<ActivityView>;
+		public showNotes: boolean;
 
-		constructor(parent: ActivityViewsDay, activity: Model.Activity, relatedToDate: Date) {
+		public darkColor: KnockoutObservable<string>;
+		public lightColor: KnockoutObservable<string>;
+		public leftPosition: KnockoutComputed<number>;
+		public bottom: KnockoutObservable<number>;
+
+		constructor(parent: ActivityViewList, activity: Model.Activity, relatedToDate: Date) {
 			this.parent = parent;
 			this.activity = activity;
 
-			var mmtMidnight = moment(relatedToDate).startOf("day");
+			var mmtBaseLine = moment(relatedToDate).startOf("hour");
 			var mmtStart = moment(activity.startedOn());
-			var start = mmtStart.diff(mmtMidnight, "minutes");
+			var start = mmtStart.diff(mmtBaseLine, "minutes");
 			this.start = ko.observable<number>(start);
 
-			var mmtEnd = moment(activity.endedOn());
-			var end = mmtEnd.diff(mmtMidnight, "minutes");
-			this.end = ko.observable<number>(end);
-			this.duration = ko.observable<number>(end - start);
-
-			this.selected = ko.observable<boolean>(false);
-
-			this.contentTemplateName = "tmplBaseActivityView";
-		}
-
-		public clicked(): void {
-			if (this.selected()) {
-				alert("show details");
+			if (activity.endedOn()) {
+				var mmtEnd = moment(activity.endedOn());
+				var end = mmtEnd.diff(mmtBaseLine, "minutes");
+				this.end = ko.observable<number>(end);
+				this.duration = ko.observable<number>(end - start);
 			}
 			else {
-				this.parent.page.selectActivity(this);
+				this.end = ko.observable<number>(start);
+				this.duration = ko.observable<number>(0);
 			}
+
+			this.darkColor = ko.observable<string>("black");
+			this.lightColor = ko.observable<string>("silver");
+			this.leftPosition = ko.computed<number>(() => {
+				var isWide = Application.wideScreen();
+				return this._getLeftPosition(isWide);
+			}, this);
+
+			this.showInfoBubble = this.activity.endedOn() && this.parent.dateInViewsRange(this.activity.endedOn());
+			this.selected = ko.observable<boolean>(false);
+
+			this.contentTemplateName = ko.computed(() => {
+				var isWide = Application.wideScreen();
+				var isSelected = this.selected();
+				return this._getTemplateName(isWide, isSelected);
+			}, this);
+
+			this.previousActivity = ko.observable<ActivityView>();
+
+			this.showNotes = true;
+		}
+
+		public select(): void {
+			this.parent.page.selectActivity(this.selected() ? undefined : this);
+		}
+
+		public showActionMenu(): void {
+			this.parent.page.messageBox(index => this._handleActionMenu(index), this, "Action", false, "Cancel", this._getActionMenuButtons());
+		}
+
+		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {
+			return "tmplBaseActivityView";
+		}
+
+		protected _getLeftPosition(isWide: boolean): number {
+			return 80;
+		}
+
+		public editNote(): void {
+			var activityNote = this.activity.note();
+			var notePage = new NotePage(AppForm.instance, activityNote ? activityNote.text() : "");
+			notePage.saved.add(this, (any, e) => {
+				var noteText = notePage.text();
+				if (noteText) {
+					if (!activityNote) {
+						this.activity.addNote(new Model.Note());
+						activityNote = this.activity.note();
+					}
+
+					activityNote.text(notePage.text());
+
+					var service = Data.WebService.ServiceFactory.instance.connect();
+					service.saveNote(activityNote);
+				}
+				else if (activityNote) {
+					var service = Data.WebService.ServiceFactory.instance.connect();
+					service.deleteNote(activityNote.id);
+					this.activity.note(undefined);
+				}
+			});
+			notePage.show();
+		}
+
+		protected _handleActionMenu(index: number): void {
+			if (index === 0) {
+				this.editNote();
+			}
+			else if (index === 1) {
+				MobileCRM.UI.FormManager.showEditDialog(this.activity.entityName, this.activity.id.Value, null);
+			}
+			else if (index === 2) {
+				this.parent.page.messageBox(index => this.parent.page.deleteActivity(this.activity), this, "Delete?", false, "No", ["Yes"]);
+			}
+		}
+
+		protected _getActionMenuButtons(): string[] {
+			return ["Edit Note", "Show Form", "Delete"];
 		}
 	}
 
 	class SleepView extends ActivityView {
 		public lullingDuration: KnockoutObservable<number>;
 
-		constructor(parent: ActivityViewsDay, activity: Model.Activity, relatedToDate: Date) {
+		constructor(parent: ActivityViewList, activity: Model.Activity, relatedToDate: Date) {
 			super(parent, activity, relatedToDate);
 
 			var dur = moment(activity.startedOn()).diff(moment((<Model.Sleep>activity).lullingStartedOn()), "minutes");
 			this.lullingDuration = ko.observable<number>(dur);
 
-			this.contentTemplateName = "tmplSleepView";
+			this.darkColor("#4A9E78");
+			this.lightColor("#DEECE6");
+		}
+
+		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {
+			return isWide ? "tmplSleepViewWide" : "tmplSleepView";
+		}
+
+		protected _getLeftPosition(isWide: boolean): number {
+			return isWide ? 300 : 160;
 		}
 	}
 
 	class FeedingView extends ActivityView {
-		constructor(parent: ActivityViewsDay, activity: Model.Activity, relatedToDate: Date) {
+		constructor(parent: ActivityViewList, activity: Model.Activity, relatedToDate: Date) {
 			super(parent, activity, relatedToDate);
-			this.contentTemplateName = "tmplFeedingView";
+
+			this.darkColor("navy");
+			this.lightColor("#EEEEF8");
+		}
+
+		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {
+			return isWide ? "tmplFeedingViewWide" : "tmplFeedingView";
+		}
+	}
+
+	class DiaperView extends ActivityView {
+		constructor(parent: ActivityViewList, activity: Model.Activity, relatedToDate: Date) {
+			super(parent, activity, relatedToDate);
+
+			this.darkColor((<Model.Diaper>activity).load() === Model.DiaperLoad.Pee ? "orange" : "brown");
+			this.lightColor((<Model.Diaper>activity).load() === Model.DiaperLoad.Pee ? "#FFEBB2" : "#FFD5A1");
+		}
+
+		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {
+			return isWide ? "tmplDiaperViewWide" : "tmplDiaperView";
+		}
+
+		protected _getLeftPosition(isWide: boolean): number {
+			return isWide ? 480 : 240;
+		}
+	}
+
+	class EventView extends ActivityView {
+		constructor(parent: ActivityViewList, activity: Model.Activity, relatedToDate: Date) {
+			super(parent, activity, relatedToDate);
+
+			this.darkColor("#333333");
+			this.lightColor("#eeeeee");
+
+			this.showNotes = false;
+		}
+
+		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {
+			return "tmplEventView";
+		}
+
+		protected _getLeftPosition(isWide: boolean): number {
+			return isWide ? 610 : 240;
 		}
 	}
 
@@ -363,11 +613,14 @@
 	</div>\
 	<!-- ko if: !activeFeeding() && !activeSleep() -->\
 	<div style=\"padding: 5px; margin: 5px; display: flex; flex-direction: row\">\
-		<div class=\"action\" style=\"flex: 1 1 50%\" data-bind=\"click: startNewFeeding\">\
+		<div class=\"action\" style=\"flex: 1 1 47%\" data-bind=\"click: startNewFeeding\">\
 			<span data-bind=\"text: feedingActionLabel\" /><br />\
 			<span class=\"clockSmall\" data-bind=\"text: lastFedLabel\" />\
 		</div>\
-		<div class=\"action\" style=\"flex: 1 1 50%\" data-bind=\"click: startNewSleep\">\
+		<div class=\"action\" style=\"flex: 0 1 6%; font-size: 50px\" data-bind=\"click: addEvent\">\
+			+\
+		</div>\
+		<div class=\"action\" style=\"flex: 1 1 47%\" data-bind=\"click: startNewSleep\">\
 			Spinkat<br />\
 			<span class=\"clockSmall\" data-bind=\"text: lastSleepLabel\" />\
 		</div>\
@@ -414,18 +667,21 @@
 	<!-- /ko -->\
 	<!-- ko foreach: timeLine -->\
 		<div style=\"box-sizing: border-box; border-bottom: solid 1px black; border-top: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #eeeeee\">\
-			<span data-bind=\"text: moment(date).format('dddd, DD.MM.YYYY')\"/><br />\
-			<div style=\"font-size: 10px\">\
-			Sleep: <b>4:50</b> (day: <b>0:45</b>), Fed <b>5x</b> - every <b>1:25</b> for <b>0:12</b>\
-			</div>\
+			<span data-bind=\"text: moment(fromDate).format('dddd, DD.MM.YYYY') + ' - ' + (isDay ? 'Day' : 'Night')\"/><br />\
 		</div>\
 		<div style=\"position: relative; width: 100%; overflow: hidden\">\
-			<!-- ko foreach: hours -->\
-				<div style=\"padding: 3px; box-sizing: border-box; border-bottom: dotted 1px #aaaaaa; height: 30px; width: 100%\" data-bind=\"text: $data.hourLabel + ':30', style: { backgroundColor: !$data.isDaySlot ? '#FFF3CC' : '#FFFCF4' }\" />\
-				<div style=\"padding: 3px; box-sizing: border-box; border-bottom: dashed 1px #777777; height: 30px; width: 100%\" data-bind=\"text: $data.hourLabel + ':00', style: { backgroundColor: !$data.isDaySlot ? '#FFF3CC' : '#FFFCF4' }\" />\
+			<!-- ko foreach: slots -->\
+				<div style=\"padding: 3px; box-sizing: border-box; border-bottom: dotted 1px #aaaaaa; height: 30px; width: 100%\" data-bind=\"text: hourLabel + ':30', style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }\" />\
+				<div style=\"padding: 3px; box-sizing: border-box; border-bottom: dashed 1px #777777; height: 30px; width: 100%\" data-bind=\"text: hourLabel + ':00', style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }\" />\
+			<!-- /ko -->\
+			<!-- ko if: currentTime() >= 0 -->\
+				<div style=\"position: absolute; padding: 0px; box-sizing: border-box; border-bottom: dotted 2px red; height: 2px; left: 0px; width: 100%\" data-bind=\"style: {bottom: currentTime() + 'px'}\" />\
 			<!-- /ko -->\
 			<!-- ko foreach: activities -->\
-				<!-- ko template: { name: contentTemplateName } --><!-- /ko -->\
+				<!-- ko template: { name: 'tmplActivityTimeLine' } --><!-- /ko -->\
+				<!-- ko if: showInfoBubble -->\
+					<!-- ko template: { name: 'tmplActivityInfoBubble' } --><!-- /ko -->\
+				<!-- /ko -->\
 			<!-- /ko -->\
 		</div>\
 	<!-- /ko -->\
@@ -433,45 +689,94 @@
 		<span>Load previous day</span>\
 	</div>");
 
-	Resco.Controls.KOEngine.instance.addTemplate("tmplSleepView", "<div style=\"position: absolute; left: 45px; width: 15px; background: #4A9E78; opacity: 0.65\" data-bind=\"style: {bottom: start() + 'px', height: duration() + 'px'}\"></div>\
-	<div style=\"position: absolute; left: 60px; width: 100px; height: 1px; background: #4A9E78\" data-bind=\"style: {bottom: (start() + (duration() / 2)) + 'px'}\"></div>\
-<!-- ko if: !selected() -->\
-	<div style=\"box-sizing: border-box; position: absolute; left: 160px; width: 110px; height: 30px; border: solid 1px black; padding: 5px; border-radius: 15px\" data-bind=\"click: clicked, style: {bottom: (start() + (duration() / 2) - 14) + 'px', backgroundColor: activity.daySleep() ? '#77FFC2' : '#4A9E78'}\">\
-		<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.SleepPlace[activity.place()]\" /> <span data-bind=\"text: duration()\" />min<br />\
-	</div>\
-<!-- /ko -->\
-<!-- ko if: selected() -->\
-	<div style=\"box-sizing: border-box; z-index: 10; position: absolute; overflow: hidden; min-height: 30px; width: 150px; left: 160px; padding: 5px; border-radius: 15px; border: solid 1px black; box-sizing: border-box\" data-bind=\"click: clicked, style: {bottom: (start() + (duration() / 2) - 14) + 'px', backgroundColor: activity.daySleep() ? '#77FFC2' : '#4A9E78'}\">\
-		<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.SleepPlace[activity.place()]\" /> <span data-bind=\"text: duration()\" />minut<br />\
-		<span style=\"font-size: 10px\" data-bind=\"text: 'od: ' + moment(activity.startedOn()).format('HH:mm') + ' do: ' + moment(activity.endedOn()).format('HH:mm')\" /><br/>\
-		<!-- ko if: activity.quality() -->\
-		<span style=\"font-size: 10px\" data-bind=\"text: 'Quality: ' + DrBaby.Model.SleepQuality[activity.quality()]\" />\
+	Resco.Controls.KOEngine.instance.addTemplate("tmplActivityTimeLine", "<div style=\"position: absolute; left: 45px; width: 15px; opacity: 0.65\" data-bind=\"style: {bottom: start() + 'px', height: duration() + 'px', background: darkColor()}\"></div>");
+
+	Resco.Controls.KOEngine.instance.addTemplate("tmplActivityInfoBubble", "<div class=\"indexLine\" data-bind=\"style: {bottom: (start() + (duration() / 2)) + 'px', width: (leftPosition() - 60) + 'px', background: darkColor()}\"></div>\
+<div class=\"infoBubble\" data-bind=\"click: select, css: {infoBubbleSelected: selected(), infoBubbleUnselected: !selected()}, style: {bottom: (start() + (duration() / 2) - 14) + 'px', left: leftPosition() + 'px', backgroundColor: lightColor(), borderColor: darkColor()}\">\
+	<div style=\"flex: 1 1 auto; padding: 5px\">\
+		<!-- ko template: { name: contentTemplateName() } --><!-- /ko -->\
+		<!-- ko if: selected() && activity.showNotes && activity.note() -->\
+			<div style=\"font-size: 10px; white-space: nowrap; overflow: hidden; text - overflow: ellipsis; max-width: 120px; cursor: pointer\" data-bind=\"click: editNote\">\
+				<img style=\"width: 12px\" src=\"Images/Note.png\" /> <span style=\"font-style: italic\" data-bind=\"text: activity.note().text()\" />\
+			</div>\
 		<!-- /ko -->\
 	</div>\
+<!-- ko if: selected() -->\
+	<div style=\"flex: 0 0 15px; cursor: pointer; text-align: center\" data-bind=\"click: showActionMenu, clickBubble: false, style: {background: darkColor()}\">...</div>\
+<!-- /ko -->\
+</div>");
+
+	Resco.Controls.KOEngine.instance.addTemplate("tmplSleepView", "<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.SleepPlace[activity.place()]\" /> <span data-bind=\"text: duration()\" />min<br />");
+
+	Resco.Controls.KOEngine.instance.addTemplate("tmplSleepViewWide", "<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.SleepPlace[activity.place()]\" /> <span data-bind=\"text: duration()\" />minut \
+<span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'\" /><br />\
+<!-- ko if: selected() -->\
+	<!-- ko if: activity.quality() !== undefined -->\
+		<span style=\"font-size: 10px\" data-bind=\"text: 'Quality: ' + DrBaby.Model.SleepQuality[activity.quality()]\" />\
+	<!-- /ko -->\
 <!-- /ko -->");
 
-	Resco.Controls.KOEngine.instance.addTemplate("tmplFeedingView", "<div style=\"position: absolute; left: 45px; width: 15px; background: navy; opacity: 0.65\" data-bind=\"style: {bottom: start() + 'px', height: duration() + 'px'}\"></div>\
-	<div style=\"position: absolute; left: 60px; width: 15px; height: 1px; background: navy\" data-bind=\"style: {bottom: (start() + (duration() / 2)) + 'px'}\"></div>\
-	<!-- ko if: !selected() -->\
-	<div style=\"box-sizing: border-box; position: absolute; left: 75px; width: 80px; height: 30px; border: solid 1px navy; padding: 5px; background: #eeeef8; border-radius: 15px\" data-bind=\"click: clicked, style: {bottom: (start() + (duration() / 2) - 14) + 'px', borderLeftWidth: activity.breast() === DrBaby.Model.Breast.Left ? '5px' : '1px', borderRightWidth: activity.breast() === DrBaby.Model.Breast.Right ? '5px' : '1px'}\">\
-		<span style=\"font-weight: bold\" data-bind=\"text: activity.breast() === DrBaby.Model.Breast.Left ? 'L' : 'P'\" /> <span data-bind=\"text: duration()\" />min\
-		<!-- ko if: activity.postDoses().length > 0 || activity.preDoses().length > 0 -->\
-		<img style=\"width: 10px\" src=\"Images/Medicament.png\" />\
-		<!-- /ko -->\
-	</div>\
+	Resco.Controls.KOEngine.instance.addTemplate("tmplFeedingViewWide", "<span style =\"font-weight: bold\" data-bind=\"text: activity.breast() === DrBaby.Model.Breast.Left ? 'Lavy' : 'Pravy'\" /> <span data-bind=\"text: duration()\" />minut \
+<span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'\" />\
+<!-- ko if: !selected() -->\
+	<!-- ko if: activity.postDoses().length > 0 || activity.preDoses().length > 0 --><img style=\"width: 15px\" src=\"Images/Medicament.png\" /><!-- /ko -->\
+<!-- /ko -->\
+<!-- ko if: selected() -->\
+	<!-- ko foreach: activity.preDoses() -->\
+		<div style=\"font-size: 10px\"><img style=\"width: 7px\" src=\"Images/Medicament.png\" /> pred: <span data-bind=\"text: name\" /></div>\
 	<!-- /ko -->\
-	<!-- ko if: selected() -->\
-	<div style=\"box-sizing: border-box; position: absolute; left: 75px; width: 200px; z-index: 10; border: solid 1px navy; padding: 5px; background: #eeeef8; border-radius: 15px\" data-bind=\"click: clicked, style: {bottom: (start() + (duration() / 2) - 14) + 'px', borderLeftWidth: activity.breast() === DrBaby.Model.Breast.Left ? '5px' : '1px', borderRightWidth: activity.breast() === DrBaby.Model.Breast.Right ? '5px' : '1px'}\">\
-		<span style=\"font-weight: bold\" data-bind=\"text: activity.breast() === DrBaby.Model.Breast.Left ? 'Lavy' : 'Pravy'\" /> <span data-bind=\"text: duration()\" />minut<br />\
-		<span style=\"font-size: 10px\" data-bind=\"text: 'od: ' + moment(activity.startedOn()).format('HH:mm') + ' do: ' + moment(activity.endedOn()).format('HH:mm')\" />\
-		<!-- ko foreach: activity.preDoses() -->\
-			<div style=\"font-size: 10px\"><img style=\"width: 7px\" src=\"Images/Medicament.png\" /> pred: <span data-bind=\"text: name\" /></div>\
-		<!-- /ko -->\
-		<!-- ko foreach: activity.postDoses() -->\
-			<div style=\"font-size: 10px\"><img style=\"width: 7px\" src=\"Images/Medicament.png\" /> po: <span data-bind=\"text: name\" /></div>\
-		<!-- /ko -->\
-	</div>\
-	<!-- /ko -->");
+	<!-- ko foreach: activity.postDoses() -->\
+		<div style=\"font-size: 10px\"><img style=\"width: 7px\" src=\"Images/Medicament.png\" /> po: <span data-bind=\"text: name\" /></div>\
+	<!-- /ko -->\
+<!-- /ko -->");
+
+	Resco.Controls.KOEngine.instance.addTemplate("tmplFeedingView", "<!-- ko if: !selected() -->\
+	<span style=\"font-weight: bold\" data-bind=\"text: activity.breast() === DrBaby.Model.Breast.Left ? 'L' : 'P'\" /> <span data-bind=\"text: duration()\" />min\
+	<!-- ko if: activity.postDoses().length > 0 || activity.preDoses().length > 0 --><img style=\"width: 10px\" src=\"Images/Medicament.png\" /><!-- /ko -->\
+<!-- /ko -->\
+<!-- ko if: selected() -->\
+	<span style=\"font-weight: bold\" data-bind=\"text: activity.breast() === DrBaby.Model.Breast.Left ? 'Lavy' : 'Pravy'\" /> <span data-bind=\"text: duration()\" />minut<br />\
+	<span style=\"font-size: 10px\" data-bind=\"text: 'od: ' + moment(activity.startedOn()).format('HH:mm') + ' do: ' + moment(activity.endedOn()).format('HH:mm')\" />\
+	<!-- ko foreach: activity.preDoses() -->\
+		<div style=\"font-size: 10px\"><img style=\"width: 7px\" src=\"Images/Medicament.png\" /> pred: <span data-bind=\"text: name\" /></div>\
+	<!-- /ko -->\
+	<!-- ko foreach: activity.postDoses() -->\
+		<div style=\"font-size: 10px\"><img style=\"width: 7px\" src=\"Images/Medicament.png\" /> po: <span data-bind=\"text: name\" /></div>\
+	<!-- /ko -->\
+<!-- /ko -->");
+
+	Resco.Controls.KOEngine.instance.addTemplate("tmplDiaperView", "<!-- ko if: !selected() -->\
+	<img style=\"width: 24px; position: relative; top: -3px; left: -3px\" data-bind=\"attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}\" />\
+<!-- /ko -->\
+<!-- ko if: selected() -->\
+	<img style=\"width: 24px; position: relative; top: -3px; left: -3px; display: inline-block\" data-bind=\"attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}\" /> <span style=\"font-size: 10px; font-weight: bold\" data-bind=\"text: DrBaby.Model.DiaperAmount[activity.amount()]\" /><br />\
+	<span style=\"font-size: 10px\" data-bind=\"text: moment(activity.startedOn()).format('HH:mm')\" />\
+<!-- /ko -->");
+
+	Resco.Controls.KOEngine.instance.addTemplate("tmplDiaperViewWide", "<img style=\"width: 24px; position: relative; top: -3px; left: -3px; display: inline-block\" data-bind=\"attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}\" />\
+<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.DiaperAmount[activity.amount()]\" />\
+<span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ')'\" />");
+
+	Resco.Controls.KOEngine.instance.addTemplate("tmplEventView", "<!-- ko if: activity.note() -->\
+<img src=\"Images/Note.png\" style=\"width: 16px; position: relative; display: inline-block\" /> <span data-bind=\"text: activity.note().text\"></span>\
+<!-- /ko -->");
 
 	Resco.Controls.KOEngine.instance.addTemplate("tmplBaseActivityView", "");
+
+//	Resco.Controls.KOEngine.instance.addTemplate("tmplSleepView", "<div style=\"position: absolute; left: 45px; width: 15px; background: #4A9E78; opacity: 0.65\" data-bind=\"style: {bottom: start() + 'px', height: duration() + 'px'}\"></div>\
+//	<div class=\"indexLine\" style=\"width: 100px; background: #4A9E78\" data-bind=\"style: {bottom: (start() + (duration() / 2)) + 'px'}\"></div>\
+//<!-- ko if: !selected() -->\
+//	<div class=\"infoBubble\" style=\"left: 160px; width: 110px; height: 30px; border-color: #4A9E78\" data-bind=\"click: clicked, style: {bottom: (start() + (duration() / 2) - 14) + 'px', backgroundColor: activity.daySleep() ? '#77FFC2' : '#deece6'}\">\
+//		<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.SleepPlace[activity.place()]\" /> <span data-bind=\"text: duration()\" />min<br />\
+//	</div>\
+//<!-- /ko -->\
+//<!-- ko if: selected() -->\
+//	<div class=\"infoBubble\" style=\"z-index: 10; min-height: 30px; width: 150px; left: 160px; border-color: #4A9E78\" data-bind=\"click: clicked, style: {bottom: (start() + (duration() / 2) - 14) + 'px', backgroundColor: activity.daySleep() ? '#77FFC2' : '#deece6'}\">\
+//		<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.SleepPlace[activity.place()]\" /> <span data-bind=\"text: duration()\" />minut<br />\
+//		<span style=\"font-size: 10px\" data-bind=\"text: 'od: ' + moment(activity.startedOn()).format('HH:mm') + ' do: ' + moment(activity.endedOn()).format('HH:mm')\" /><br/>\
+//		<!-- ko if: activity.quality() -->\
+//		<span style=\"font-size: 10px\" data-bind=\"text: 'Quality: ' + DrBaby.Model.SleepQuality[activity.quality()]\" />\
+//		<!-- /ko -->\
+//	</div>\
+//<!-- /ko -->");
 }

@@ -41,6 +41,9 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Model\activity.ts" />
+    <TypeScriptCompile Include="Model\event.ts" />
+    <TypeScriptCompile Include="Model\note.ts" />
+    <TypeScriptCompile Include="Model\diaper.ts" />
     <TypeScriptCompile Include="Model\dose.ts" />
     <TypeScriptCompile Include="Model\feeding.ts" />
     <TypeScriptCompile Include="Model\sleep.ts" />
@@ -86,6 +89,7 @@
     <TypeScriptCompile Include="Resco\logger.ts" />
     <TypeScriptCompile Include="UI\Feeding\feedingPage.ts" />
     <TypeScriptCompile Include="UI\Main\mainPage.ts" />
+    <TypeScriptCompile Include="UI\Note\notePage.ts" />
     <TypeScriptCompile Include="UI\Sleep\sleepPage.ts" />
   </ItemGroup>
   <ItemGroup>

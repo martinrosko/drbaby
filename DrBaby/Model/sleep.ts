@@ -11,6 +11,7 @@
 			this.quality = ko.observable<SleepQuality>();
 			this.place = ko.observable<SleepPlace>();
 			this.daySleep = ko.observable<boolean>();
+			this.entityName = "sleep";
 		}
 	}
 
@@ -27,6 +28,8 @@
 		Stroller,
 		Couch,
 		Bed,
+		Arms,
+		Car,
 		Other
 	}
 }

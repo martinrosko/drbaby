@@ -9,6 +9,7 @@
 			this.breast = ko.observable<Breast>();
 			this.preDoses = ko.observableArray<Dose>([]);
 			this.postDoses = ko.observableArray<Dose>([]);
+			this.entityName = "feeding";
 		}
 	}
 
