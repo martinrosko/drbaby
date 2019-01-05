@@ -30,17 +30,29 @@
 			});
 		}
 
-		public ConvertEntity(dynamicEntity: MobileCRM.DynamicEntity, me: MobileCRM.MetaEntity): ServerEntity {
+		public ConvertEntity(jsbResult: any, me: MobileCRM.MetaEntity, linksMeta: Resco.Dictionary<string, MobileCRM.MetaEntity>): ServerEntity {
 			let se = new ServerEntity();
-			se.logicalName = dynamicEntity.entityName;
-			se.id = new Guid(dynamicEntity.id);
-			let keys = Object.keys(dynamicEntity.properties);
+			//se.logicalName = dynamicEntity.entityName;
+			se.id = new Guid(jsbResult.id);
+			let keys = Object.keys(jsbResult);
 
 			for (let iter = 0; iter < keys.length; iter++) {
 				let key = keys[iter];
 				if (key && !key.startsWith("_")) {
-					let mp = me.getProperty(key);
-					let val = dynamicEntity.properties[key];
+					let mp: MobileCRM.MetaProperty;
+					let val: any;
+					if (key.indexOf(".") >= 0) {
+						var pp = key.split(".");
+						var linkMeta = linksMeta.getValue(pp[0]);
+						if (!linkMeta)
+							continue;
+						mp = linkMeta.getProperty(pp[1]);
+						val = jsbResult[key];
+					}
+					else {
+						mp = me.getProperty(key);
+						val = jsbResult[key];
+					}
 					if (val) {
 						// JSB tpo XRM type conversions
 						if ((mp.type == CrmType.Lookup || mp.type == CrmType.Customer || mp.type == CrmType.Owner) && val instanceof MobileCRM.Reference) {
@@ -48,7 +60,7 @@
 							val = new EntityReference(ref.entityName, new Guid(ref.id), ref.primaryName);
 						}
 						else if ((mp.type == CrmType.Picklist || mp.type == CrmType.State || mp.type == CrmType.Status)) {
-							val = new OptionSetValue(val);
+							val = new OptionSetValue(+val);
 						}
 						else if (mp.type == 2 /*datetime*/) {
 							val = new DateTime(val);
@@ -85,7 +97,9 @@
 						indexOfResultFormat += 6;
 						var strBefore = fetchQuery.substring(0, indexOfResultFormat);
 						var strAfter = fetchQuery.substring(indexOfResultFormat);
-						fetchQuery = strBefore + ' resultformat=' + quote + 'DynamicEntities' + quote + ' ' + strAfter;
+						fetchQuery = strBefore + ' resultformat=' + quote + 'JSON' + quote + ' ' + strAfter;
+
+						var linksMeta = await this._getLinkEntitiesMetadata(fetchQuery);
 
 						return new Promise<ServerEntity[]>((resolve, reject) => {
 							MobileCRM.MetaEntity.loadByName(entityName, (me) => {
@@ -100,7 +114,7 @@
 									}
 									fetchQuery = fetchQuery.replace("<all-attributes />", namedAttributes);
 								}
-								resolve(this.executeMobileCrmFetch(fetchQuery, me));
+								resolve(this.executeMobileCrmFetch(fetchQuery, me, linksMeta));
 							}, (err) => reject(err));
 						});
 					}
@@ -109,22 +123,66 @@
 			}
 		}
 
-		private async executeMobileCrmFetch(fetchQuery: string, me: MobileCRM.MetaEntity): Promise<ServerEntity[]> {
+		private async _getLinkEntitiesMetadata(fetchQuery: string): Promise<Resco.Dictionary<string, MobileCRM.MetaEntity>> {
+			var result = new Resco.Dictionary<string, MobileCRM.MetaEntity>();
+			var index = fetchQuery.indexOf("<link-entity");
+			while (index >= 0) {
+				var endIndex = fetchQuery.indexOf(">", index);
+				var strLinkEntity = fetchQuery.substring(index, endIndex);
+				var parsedLink = this._parseLinkEntityMetadata(strLinkEntity);
+				if (parsedLink.name) {
+					var me = await this._getLinkEntityMetadata(parsedLink.name);
+					if (me)
+						result.set(parsedLink.alias, me);
+				}
+
+				fetchQuery = fetchQuery.substring(endIndex);
+				index = fetchQuery.indexOf("<link-entity");
+			}
+			return result;
+		}
+
+		private _parseLinkEntityMetadata(strLinkEntity: string): { name: string, alias: string } {
+			var result = { name: "", alias: "" };
+			var nameIndex1 = strLinkEntity.indexOf("name=\"");
+			if (nameIndex1 >= 0) {
+				var nameIndex2 = strLinkEntity.indexOf("\"", nameIndex1 + 6);
+				if (nameIndex2)
+					result.name = strLinkEntity.substring(nameIndex1 + 6, nameIndex2);
+			}
+			var aliasIndex1 = strLinkEntity.indexOf("alias=\"");
+			if (aliasIndex1 >= 0) {
+				var aliasIndex2 = strLinkEntity.indexOf("\"", aliasIndex1 + 7);
+				if (aliasIndex2)
+					result.alias = strLinkEntity.substring(aliasIndex1 + 7, aliasIndex2);
+			}
+			else {
+				result.alias = result.name;
+			}
+			return result;
+		}
+
+		private async _getLinkEntityMetadata(entityName: string): Promise<MobileCRM.MetaEntity> {
+			return new Promise<MobileCRM.MetaEntity>((resolve, reject) => {
+				MobileCRM.MetaEntity.loadByName(entityName, (me) => {
+					resolve(me);
+				}, (err) => reject(err));
+			});
+		}
+
+		private async executeMobileCrmFetch(fetchQuery: string, me: MobileCRM.MetaEntity, linksMeta: Resco.Dictionary<string, MobileCRM.MetaEntity>): Promise<ServerEntity[]> {
 			return await new Promise<ServerEntity[]>((resolve, reject) => {
 				MobileCRM.FetchXml.Fetch.executeFromXML(fetchQuery, res => {
 					var serverEntities = new Array<ServerEntity>();
 					if (res.length == 0)
 						resolve(serverEntities);
 					else {
-						let resKeys = Object.keys(res);
-						let entityName = res[0].entityName;
+						//let resKeys = Object.keys(res);
+						//let entityName = res[0].entityName;
 						//						MobileCRM.MetaEntity.loadByName(entityName, (me) => {
-						for (let i = 0; i < resKeys.length; i++) {
-							var de = res[i];
-							if (de) {
-								var se = this.ConvertEntity(de, me);
-								serverEntities.push(se);
-							}
+						for (let i = 0; i < res.length; i++) {
+							var se = this.ConvertEntity(res[i], me, linksMeta);
+							serverEntities.push(se);
 						}
 						resolve(serverEntities);
 						//						}, (err) => reject(err));
@@ -154,6 +212,14 @@
 								reject("Cannot delete association record because it wasn't found based on ids of related fields.");
 						} else
 							MobileCRM.DynamicEntity.deleteById(de.entityName, de.id, () => resolve(), (err) => reject(err));
+					}
+					else if (request.action === "CreateMany2Many" || request.action === "DeleteMany2Many") {
+						var ref1 = <MobileCRM.Reference>request.getValue(request.primaryKey[0]);
+						var ref2 = <MobileCRM.Reference>request.getValue(request.primaryKey[1]);
+						if (request.action === "CreateMany2Many")
+							MobileCRM.ManyToManyReference.create(request.logicalName, ref1, ref2, () => resolve(), (err) => reject(err));
+						else
+							MobileCRM.ManyToManyReference.remove(request.logicalName, ref1, ref2, () => resolve(), (err) => reject(err));
 					}
 					else { // create or update action
 						let identifier = entityRequest.getValue("id");
@@ -246,7 +312,7 @@
 
 		public buildUpdateManyToManyRequest(entityName: string, relationshipName: string, create: boolean, attribute1: string, k1: string, target1: string, attribute2: string, k2: string, target2: string): any {
 			var entity = new MobileCrmEntity(entityName);
-			entity.action = create ? "Create" : "Delete";
+			entity.action = create ? "CreateMany2Many" : "DeleteMany2Many";
 			entity.primaryKey = [attribute1, attribute2];
 			entity.addTypeValue(attribute1, CrmType.Lookup, new EntityReference(target1, new Guid(k1), null));
 			entity.addTypeValue(attribute2, CrmType.Lookup, new EntityReference(target2, new Guid(k2), null));

@@ -14,12 +14,12 @@
 			if (sleep.id)//!questionnaire.isNew) 
 				entity.addTypeValue("id", Resco.Data.WebService.CrmType.PrimaryKey, sleep.id.Value);
 
-			//entity.addTypeValue("scheduledstart", Resco.Data.WebService.CrmType.DateTime, sleep.lullingStartedOn());
+			entity.addTypeValue("scheduledstart", Resco.Data.WebService.CrmType.DateTime, sleep.lullingStartedOn());
 			entity.addTypeValue("actualstart", Resco.Data.WebService.CrmType.DateTime, sleep.startedOn());
 			entity.addTypeValue("actualend", Resco.Data.WebService.CrmType.DateTime, sleep.endedOn());
 			entity.addTypeValue("quality", Resco.Data.WebService.CrmType.Picklist, sleep.quality());
 			entity.addTypeValue("type", Resco.Data.WebService.CrmType.Picklist, sleep.place());
-			//entity.addTypeValue("daysleep", Resco.Data.WebService.CrmType.Boolean, sleep.daySleep());
+			entity.addTypeValue("daysleep", Resco.Data.WebService.CrmType.Boolean, sleep.daySleep());
 
 			var result = await this.m_service.executeRequest(sleep.id ? this.m_service.buildUpdateRequest(entity) : this.m_service.buildCreateRequest(entity));
 			if (!sleep.id) {
@@ -175,7 +175,9 @@
 		private async _getDayAcitivites(actName: string, fromDate: Date, toDate: Date): Promise<Resco.Data.WebService.ServerEntity[]> {
 			return await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"" + actName + "\"><all-attributes />\
 <link-entity name=\"annotation\" from=\"objectid\" to=\"id\" link-type=\"outer\" alias=\"note\">\
-	<all-attributes />\
+	<attribute name=\"id\" />\
+	<attribute name=\"subject\" />\
+	<attribute name=\"documentbody\" />\
 </link-entity>\
 <order attribute=\"actualstart\" />\
 <filter type=\"or\">\
@@ -205,9 +207,13 @@
 			var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"pre_feeding_dose\">\
 	<all-attributes />\
 	<link-entity name=\"dose\" from=\"id\" to=\"dose\" alias=\"pre_dose\">\
-		<all-attributes />\
-	</link-entity>\"\
-	<filter type=\"and\"><condition attribute=\"feeding\" operator=\"eq\" value=\"" + feeding.id.Value + "\" />\</filter>\
+		<attribute name=\"id\" />\
+		<attribute name=\"name\" />\
+		<attribute name=\"amount\" />\
+		<attribute name=\"medicament\" />\
+		<attribute name=\"unit\" />\
+	</link-entity>\
+	<filter type=\"and\"><condition attribute=\"feeding\" operator=\"eq\" value=\"" + feeding.id.Value + "\" /></filter>\
 </entity></fetch>");
 			var doses = serverEntities.map(se => this._getDoseFromServerEntity(se, "pre_dose."));
 			feeding.preDoses(doses);
@@ -215,12 +221,36 @@
 			serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"post_feeding_dose\">\
 	<all-attributes />\
 	<link-entity name=\"dose\" from=\"id\" to=\"dose\" alias=\"post_dose\">\
-		<all-attributes />\
-	</link-entity>\"\
-	<filter type=\"and\"><condition attribute=\"feeding\" operator=\"eq\" value=\"" + feeding.id.Value + "\" />\</filter>\
+		<attribute name=\"id\" />\
+		<attribute name=\"name\" />\
+		<attribute name=\"amount\" />\
+		<attribute name=\"medicament\" />\
+		<attribute name=\"unit\" />\
+	</link-entity>\
+	<filter type=\"and\"><condition attribute=\"feeding\" operator=\"eq\" value=\"" + feeding.id.Value + "\" /></filter>\
 </entity></fetch>");
 			doses = serverEntities.map(se => this._getDoseFromServerEntity(se, "post_dose."));
 			feeding.postDoses(doses);
+		}
+
+		public async loadDoses(): Promise<Model.Dose[]> {
+			var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"dose\">\
+		<attribute name=\"id\" />\
+		<attribute name=\"name\" />\
+		<attribute name=\"amount\" />\
+		<attribute name=\"medicament\" />\
+		<attribute name=\"unit\" />\
+	<filter type=\"and\"></filter>\
+</entity></fetch>");
+			return serverEntities.map(se => this._getDoseFromServerEntity(se));
+		}
+
+		public async addFeedingDose(feedingId: Resco.Data.Guid, doseId: Resco.Data.Guid, pre: boolean): Promise<void> {
+			var entity = this.m_service.createWritableEntity(pre ? "pre_feeding_dose" : "post_feeding_dose");
+			entity.addTypeValue("feeding", Resco.Data.WebService.CrmType.Lookup, new Resco.Data.WebService.EntityReference("feeding", feedingId));
+			entity.addTypeValue("dose", Resco.Data.WebService.CrmType.Lookup, new Resco.Data.WebService.EntityReference("dose", doseId));
+
+			await this.m_service.updateManyToManyReference(pre ? "pre_feeding_dose" : "post_feeding_dose", "", true, "feeding", feedingId.Value, "feeding", "dose", doseId.Value, "dose");
 		}
 
 		private _getAnnotationFromServerEntity(serverEntity: Resco.Data.WebService.ServerEntity): Model.Note {
@@ -228,6 +258,7 @@
 			if (noteId) {
 				var note = new Model.Note(noteId);
 				note.text(serverEntity.attributes["note.subject"]);
+				note.b64image(serverEntity.attributes["note.documentbody"]);
 				return note;
 			}
 			return null;
@@ -280,6 +311,7 @@
 
 		private _getDoseFromServerEntity(serverEntity: Resco.Data.WebService.ServerEntity, alias: string = ""): Model.Dose {
 			var result = new Model.Dose();
+			result.id = serverEntity.attributes[alias + "id"];
 			result.name(serverEntity.attributes[alias + "name"]);
 			var medRef = <Resco.Data.WebService.EntityReference>serverEntity.attributes[alias + "medicament"];
 			if (medRef)

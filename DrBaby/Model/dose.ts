@@ -1,5 +1,6 @@
 ﻿module DrBaby.Model {
 	export class Dose {
+		public id: Resco.Data.Guid;
 		public name: KnockoutObservable<string>;
 		public medicament: KnockoutObservable<string>;
 		public amount: KnockoutObservable<number>;

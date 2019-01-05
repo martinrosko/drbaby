@@ -88,7 +88,12 @@
     <TypeScriptCompile Include="Resco\exception.ts" />
     <TypeScriptCompile Include="Resco\logger.ts" />
     <TypeScriptCompile Include="UI\Feeding\feedingPage.ts" />
+    <TypeScriptCompile Include="UI\Main\activityView.ts" />
+    <TypeScriptCompile Include="UI\Main\eventView.ts" />
+    <TypeScriptCompile Include="UI\Main\diaperView.ts" />
     <TypeScriptCompile Include="UI\Main\mainPage.ts" />
+    <TypeScriptCompile Include="UI\Main\feedingView.ts" />
+    <TypeScriptCompile Include="UI\Main\sleepView.ts" />
     <TypeScriptCompile Include="UI\Note\notePage.ts" />
     <TypeScriptCompile Include="UI\Sleep\sleepPage.ts" />
   </ItemGroup>

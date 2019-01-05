@@ -177,11 +177,11 @@ div.toolbar {
 	overflow: auto;
 	z-index: 10;
 	max-height: 75%;
-	position: absolute;
+	position: fixed;
 }
 
 .dialogOuterArea {
-	position: absolute;
+	position: fixed;
 	left: 0px;
 	top: 0px;
 	width: 100%;

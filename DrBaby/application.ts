@@ -44,12 +44,15 @@
 					throw new Resco.UnauthorizedAccessException("Please log in to access the content of this web application.", ex);
 				}
 
+				Application.wideScreen = ko.observable<boolean>(UI.AppForm.instance.size.width() > 480);
 				$(window).resize(function () {
-					//UI.AppForm.instance.resize();
+					UI.AppForm.instance.resize();
+					Application.wideScreen(UI.AppForm.instance.size.width() > 480);
 				});
 				$(window).on({
 					"orientationchange": () => {
-						//UI.AppForm.instance.resize();
+						UI.AppForm.instance.resize();
+						Application.wideScreen(UI.AppForm.instance.size.width() > 480);
 					}
 				});
 				$(document).prop("title", "DrBaby v" + Application.versionLabel);
@@ -60,7 +63,6 @@
 					Application.now(Date.now());
 				}, 1000);
 				Application.now(Date.now());
-				Application.wideScreen = ko.observable<boolean>(true);
 
 				Application.actualHour = ko.computed<number>(() => {
 					var now = Application.now();
@@ -106,6 +108,7 @@ Go back to the <a href=\"../Login.aspx?ReturnUrl=%2fWebInspections%2findex.html\
 
 			//UI.AppForm.instance.error(errorMessage);
 			Application.log.logException(ex);
+			MobileCRM.bridge.alert(errorMessage);
 		}
 	}
 

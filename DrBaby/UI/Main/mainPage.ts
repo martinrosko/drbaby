@@ -119,10 +119,13 @@
 						this.activeFeeding(lastFeedings[0]);					
 				}
 
+
 				var activities = await service.loadActivitiesBetween(this.timeLine()[this.timeLine().length - 1].fromDate, new Date());
+
 				for (var activityDay of this.timeLine()) {
 					activityDay.loadActivities(activities);
 				}
+
 				this.m_bIsLoaded = true;
 			}
 		}
@@ -154,16 +157,18 @@
 				if (index === 2) {
 					this._addNote(startedOn);
 				}
-			}, this, "Event", false, "Cancel", ["Poop", "Pee", "Note", "Photo"]);
+			}, this, "Event", false, "Cancel", ["Poop", "Pee", "Note"]);
 		}
 
 		private get currentTimeLine(): ActivityViewList {
-			return this.timeLine().firstOrDefault(tl => tl.currentTime() >= 0);
+			var result = this.timeLine().firstOrDefault(tl => tl.currentTime() >= 0)
+			return result;
 		}
 
 		private async _addDiaper(startedOn: Date, isPoo: boolean): Promise<void> {
 			var diaper = new Model.Diaper();
 			diaper.startedOn(startedOn)
+			diaper.endedOn(startedOn)
 			diaper.load(isPoo ? Model.DiaperLoad.Poop : Model.DiaperLoad.Pee);
 
 			this.messageBox(index => {
@@ -183,6 +188,7 @@
 				if (noteText) {
 					var event = new Model.Event();
 					event.startedOn(when);
+					event.endedOn(when);
 					var note = new Model.Note();
 					note.text(noteText);
 					event.addNote(note);
@@ -324,7 +330,7 @@
 		public slots: KnockoutObservableArray<TimeLineSlot>;
 		public isDay: boolean;
 		public page: MainPage;
-		public currentTime: KnockoutObservable<number>;
+		public currentTime: KnockoutComputed<number>;
 
 		constructor(page: MainPage, fromDate: Date, toDate: Date, isDay: boolean) {
 			this.page = page;
@@ -420,193 +426,6 @@
 		}
 	}
 
-	class ActivityView {
-		public start: KnockoutObservable<number>;
-		public end: KnockoutObservable<number>;
-		public duration: KnockoutObservable<number>;
-		public contentTemplateName: KnockoutComputed<string>;
-		public activity: Model.Activity;
-		public selected: KnockoutObservable<boolean>;
-		public showInfoBubble: boolean;
-		public parent: ActivityViewList;
-		public previousActivity: KnockoutObservable<ActivityView>;
-		public showNotes: boolean;
-
-		public darkColor: KnockoutObservable<string>;
-		public lightColor: KnockoutObservable<string>;
-		public leftPosition: KnockoutComputed<number>;
-		public bottom: KnockoutObservable<number>;
-
-		constructor(parent: ActivityViewList, activity: Model.Activity, relatedToDate: Date) {
-			this.parent = parent;
-			this.activity = activity;
-
-			var mmtBaseLine = moment(relatedToDate).startOf("hour");
-			var mmtStart = moment(activity.startedOn());
-			var start = mmtStart.diff(mmtBaseLine, "minutes");
-			this.start = ko.observable<number>(start);
-
-			if (activity.endedOn()) {
-				var mmtEnd = moment(activity.endedOn());
-				var end = mmtEnd.diff(mmtBaseLine, "minutes");
-				this.end = ko.observable<number>(end);
-				this.duration = ko.observable<number>(end - start);
-			}
-			else {
-				this.end = ko.observable<number>(start);
-				this.duration = ko.observable<number>(0);
-			}
-
-			this.darkColor = ko.observable<string>("black");
-			this.lightColor = ko.observable<string>("silver");
-			this.leftPosition = ko.computed<number>(() => {
-				var isWide = Application.wideScreen();
-				return this._getLeftPosition(isWide);
-			}, this);
-
-			this.showInfoBubble = this.activity.endedOn() && this.parent.dateInViewsRange(this.activity.endedOn());
-			this.selected = ko.observable<boolean>(false);
-
-			this.contentTemplateName = ko.computed(() => {
-				var isWide = Application.wideScreen();
-				var isSelected = this.selected();
-				return this._getTemplateName(isWide, isSelected);
-			}, this);
-
-			this.previousActivity = ko.observable<ActivityView>();
-
-			this.showNotes = true;
-		}
-
-		public select(): void {
-			this.parent.page.selectActivity(this.selected() ? undefined : this);
-		}
-
-		public showActionMenu(): void {
-			this.parent.page.messageBox(index => this._handleActionMenu(index), this, "Action", false, "Cancel", this._getActionMenuButtons());
-		}
-
-		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {
-			return "tmplBaseActivityView";
-		}
-
-		protected _getLeftPosition(isWide: boolean): number {
-			return 80;
-		}
-
-		public editNote(): void {
-			var activityNote = this.activity.note();
-			var notePage = new NotePage(AppForm.instance, activityNote ? activityNote.text() : "");
-			notePage.saved.add(this, (any, e) => {
-				var noteText = notePage.text();
-				if (noteText) {
-					if (!activityNote) {
-						this.activity.addNote(new Model.Note());
-						activityNote = this.activity.note();
-					}
-
-					activityNote.text(notePage.text());
-
-					var service = Data.WebService.ServiceFactory.instance.connect();
-					service.saveNote(activityNote);
-				}
-				else if (activityNote) {
-					var service = Data.WebService.ServiceFactory.instance.connect();
-					service.deleteNote(activityNote.id);
-					this.activity.note(undefined);
-				}
-			});
-			notePage.show();
-		}
-
-		protected _handleActionMenu(index: number): void {
-			if (index === 0) {
-				this.editNote();
-			}
-			else if (index === 1) {
-				MobileCRM.UI.FormManager.showEditDialog(this.activity.entityName, this.activity.id.Value, null);
-			}
-			else if (index === 2) {
-				this.parent.page.messageBox(index => this.parent.page.deleteActivity(this.activity), this, "Delete?", false, "No", ["Yes"]);
-			}
-		}
-
-		protected _getActionMenuButtons(): string[] {
-			return ["Edit Note", "Show Form", "Delete"];
-		}
-	}
-
-	class SleepView extends ActivityView {
-		public lullingDuration: KnockoutObservable<number>;
-
-		constructor(parent: ActivityViewList, activity: Model.Activity, relatedToDate: Date) {
-			super(parent, activity, relatedToDate);
-
-			var dur = moment(activity.startedOn()).diff(moment((<Model.Sleep>activity).lullingStartedOn()), "minutes");
-			this.lullingDuration = ko.observable<number>(dur);
-
-			this.darkColor("#4A9E78");
-			this.lightColor("#DEECE6");
-		}
-
-		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {
-			return isWide ? "tmplSleepViewWide" : "tmplSleepView";
-		}
-
-		protected _getLeftPosition(isWide: boolean): number {
-			return isWide ? 300 : 160;
-		}
-	}
-
-	class FeedingView extends ActivityView {
-		constructor(parent: ActivityViewList, activity: Model.Activity, relatedToDate: Date) {
-			super(parent, activity, relatedToDate);
-
-			this.darkColor("navy");
-			this.lightColor("#EEEEF8");
-		}
-
-		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {
-			return isWide ? "tmplFeedingViewWide" : "tmplFeedingView";
-		}
-	}
-
-	class DiaperView extends ActivityView {
-		constructor(parent: ActivityViewList, activity: Model.Activity, relatedToDate: Date) {
-			super(parent, activity, relatedToDate);
-
-			this.darkColor((<Model.Diaper>activity).load() === Model.DiaperLoad.Pee ? "orange" : "brown");
-			this.lightColor((<Model.Diaper>activity).load() === Model.DiaperLoad.Pee ? "#FFEBB2" : "#FFD5A1");
-		}
-
-		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {
-			return isWide ? "tmplDiaperViewWide" : "tmplDiaperView";
-		}
-
-		protected _getLeftPosition(isWide: boolean): number {
-			return isWide ? 480 : 240;
-		}
-	}
-
-	class EventView extends ActivityView {
-		constructor(parent: ActivityViewList, activity: Model.Activity, relatedToDate: Date) {
-			super(parent, activity, relatedToDate);
-
-			this.darkColor("#333333");
-			this.lightColor("#eeeeee");
-
-			this.showNotes = false;
-		}
-
-		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {
-			return "tmplEventView";
-		}
-
-		protected _getLeftPosition(isWide: boolean): number {
-			return isWide ? 610 : 240;
-		}
-	}
-
 	Resco.Controls.KOEngine.instance.addTemplate("tmplMainPage", "<div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #eeeeee\">\
 	<span>Dominik - <span data-bind=\"text: daysSinceBirth\" />.den</span><br />\
 	<span data-bind=\"text: actualTime, css: {clockBig: !activeFeeding() && !activeSleep(), clockMedium: activeFeeding() || activeSleep()}\" />\
@@ -671,8 +490,12 @@
 		</div>\
 		<div style=\"position: relative; width: 100%; overflow: hidden\">\
 			<!-- ko foreach: slots -->\
-				<div style=\"padding: 3px; box-sizing: border-box; border-bottom: dotted 1px #aaaaaa; height: 30px; width: 100%\" data-bind=\"text: hourLabel + ':30', style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }\" />\
-				<div style=\"padding: 3px; box-sizing: border-box; border-bottom: dashed 1px #777777; height: 30px; width: 100%\" data-bind=\"text: hourLabel + ':00', style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }\" />\
+				<div style=\"padding: 3px; box-sizing: border-box; border-bottom: dotted 1px #aaaaaa; height: 30px; width: 100%\" data-bind=\"style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }\">\
+					<span style=\"position: relative; top: 10px; font-size: 10px\" data-bind=\"text: hourLabel + ':30 ', style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }\" />\
+				</div>\
+				<div style=\"padding: 3px; box-sizing: border-box; border-bottom: dashed 1px #555555; height: 30px; width: 100%\" data-bind=\"style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }\">\
+					<span style=\"position: relative; top: 9px\" data-bind=\"text: hourLabel + ':00 ', style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }\" />\
+				</div>\
 			<!-- /ko -->\
 			<!-- ko if: currentTime() >= 0 -->\
 				<div style=\"position: absolute; padding: 0px; box-sizing: border-box; border-bottom: dotted 2px red; height: 2px; left: 0px; width: 100%\" data-bind=\"style: {bottom: currentTime() + 'px'}\" />\
@@ -688,95 +511,4 @@
 	<div style=\"box-sizing: border-box; border-bottom: solid 1px black; border-top: solid 1px black; width: 100%; height: 40px; text-align: center; font-size: 14px; padding: 3px; padding-top: 20px; background: #eeeeee\" data-bind=\"click: addDay\">\
 		<span>Load previous day</span>\
 	</div>");
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplActivityTimeLine", "<div style=\"position: absolute; left: 45px; width: 15px; opacity: 0.65\" data-bind=\"style: {bottom: start() + 'px', height: duration() + 'px', background: darkColor()}\"></div>");
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplActivityInfoBubble", "<div class=\"indexLine\" data-bind=\"style: {bottom: (start() + (duration() / 2)) + 'px', width: (leftPosition() - 60) + 'px', background: darkColor()}\"></div>\
-<div class=\"infoBubble\" data-bind=\"click: select, css: {infoBubbleSelected: selected(), infoBubbleUnselected: !selected()}, style: {bottom: (start() + (duration() / 2) - 14) + 'px', left: leftPosition() + 'px', backgroundColor: lightColor(), borderColor: darkColor()}\">\
-	<div style=\"flex: 1 1 auto; padding: 5px\">\
-		<!-- ko template: { name: contentTemplateName() } --><!-- /ko -->\
-		<!-- ko if: selected() && activity.showNotes && activity.note() -->\
-			<div style=\"font-size: 10px; white-space: nowrap; overflow: hidden; text - overflow: ellipsis; max-width: 120px; cursor: pointer\" data-bind=\"click: editNote\">\
-				<img style=\"width: 12px\" src=\"Images/Note.png\" /> <span style=\"font-style: italic\" data-bind=\"text: activity.note().text()\" />\
-			</div>\
-		<!-- /ko -->\
-	</div>\
-<!-- ko if: selected() -->\
-	<div style=\"flex: 0 0 15px; cursor: pointer; text-align: center\" data-bind=\"click: showActionMenu, clickBubble: false, style: {background: darkColor()}\">...</div>\
-<!-- /ko -->\
-</div>");
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplSleepView", "<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.SleepPlace[activity.place()]\" /> <span data-bind=\"text: duration()\" />min<br />");
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplSleepViewWide", "<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.SleepPlace[activity.place()]\" /> <span data-bind=\"text: duration()\" />minut \
-<span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'\" /><br />\
-<!-- ko if: selected() -->\
-	<!-- ko if: activity.quality() !== undefined -->\
-		<span style=\"font-size: 10px\" data-bind=\"text: 'Quality: ' + DrBaby.Model.SleepQuality[activity.quality()]\" />\
-	<!-- /ko -->\
-<!-- /ko -->");
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplFeedingViewWide", "<span style =\"font-weight: bold\" data-bind=\"text: activity.breast() === DrBaby.Model.Breast.Left ? 'Lavy' : 'Pravy'\" /> <span data-bind=\"text: duration()\" />minut \
-<span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'\" />\
-<!-- ko if: !selected() -->\
-	<!-- ko if: activity.postDoses().length > 0 || activity.preDoses().length > 0 --><img style=\"width: 15px\" src=\"Images/Medicament.png\" /><!-- /ko -->\
-<!-- /ko -->\
-<!-- ko if: selected() -->\
-	<!-- ko foreach: activity.preDoses() -->\
-		<div style=\"font-size: 10px\"><img style=\"width: 7px\" src=\"Images/Medicament.png\" /> pred: <span data-bind=\"text: name\" /></div>\
-	<!-- /ko -->\
-	<!-- ko foreach: activity.postDoses() -->\
-		<div style=\"font-size: 10px\"><img style=\"width: 7px\" src=\"Images/Medicament.png\" /> po: <span data-bind=\"text: name\" /></div>\
-	<!-- /ko -->\
-<!-- /ko -->");
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplFeedingView", "<!-- ko if: !selected() -->\
-	<span style=\"font-weight: bold\" data-bind=\"text: activity.breast() === DrBaby.Model.Breast.Left ? 'L' : 'P'\" /> <span data-bind=\"text: duration()\" />min\
-	<!-- ko if: activity.postDoses().length > 0 || activity.preDoses().length > 0 --><img style=\"width: 10px\" src=\"Images/Medicament.png\" /><!-- /ko -->\
-<!-- /ko -->\
-<!-- ko if: selected() -->\
-	<span style=\"font-weight: bold\" data-bind=\"text: activity.breast() === DrBaby.Model.Breast.Left ? 'Lavy' : 'Pravy'\" /> <span data-bind=\"text: duration()\" />minut<br />\
-	<span style=\"font-size: 10px\" data-bind=\"text: 'od: ' + moment(activity.startedOn()).format('HH:mm') + ' do: ' + moment(activity.endedOn()).format('HH:mm')\" />\
-	<!-- ko foreach: activity.preDoses() -->\
-		<div style=\"font-size: 10px\"><img style=\"width: 7px\" src=\"Images/Medicament.png\" /> pred: <span data-bind=\"text: name\" /></div>\
-	<!-- /ko -->\
-	<!-- ko foreach: activity.postDoses() -->\
-		<div style=\"font-size: 10px\"><img style=\"width: 7px\" src=\"Images/Medicament.png\" /> po: <span data-bind=\"text: name\" /></div>\
-	<!-- /ko -->\
-<!-- /ko -->");
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplDiaperView", "<!-- ko if: !selected() -->\
-	<img style=\"width: 24px; position: relative; top: -3px; left: -3px\" data-bind=\"attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}\" />\
-<!-- /ko -->\
-<!-- ko if: selected() -->\
-	<img style=\"width: 24px; position: relative; top: -3px; left: -3px; display: inline-block\" data-bind=\"attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}\" /> <span style=\"font-size: 10px; font-weight: bold\" data-bind=\"text: DrBaby.Model.DiaperAmount[activity.amount()]\" /><br />\
-	<span style=\"font-size: 10px\" data-bind=\"text: moment(activity.startedOn()).format('HH:mm')\" />\
-<!-- /ko -->");
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplDiaperViewWide", "<img style=\"width: 24px; position: relative; top: -3px; left: -3px; display: inline-block\" data-bind=\"attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}\" />\
-<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.DiaperAmount[activity.amount()]\" />\
-<span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ')'\" />");
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplEventView", "<!-- ko if: activity.note() -->\
-<img src=\"Images/Note.png\" style=\"width: 16px; position: relative; display: inline-block\" /> <span data-bind=\"text: activity.note().text\"></span>\
-<!-- /ko -->");
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplBaseActivityView", "");
-
-//	Resco.Controls.KOEngine.instance.addTemplate("tmplSleepView", "<div style=\"position: absolute; left: 45px; width: 15px; background: #4A9E78; opacity: 0.65\" data-bind=\"style: {bottom: start() + 'px', height: duration() + 'px'}\"></div>\
-//	<div class=\"indexLine\" style=\"width: 100px; background: #4A9E78\" data-bind=\"style: {bottom: (start() + (duration() / 2)) + 'px'}\"></div>\
-//<!-- ko if: !selected() -->\
-//	<div class=\"infoBubble\" style=\"left: 160px; width: 110px; height: 30px; border-color: #4A9E78\" data-bind=\"click: clicked, style: {bottom: (start() + (duration() / 2) - 14) + 'px', backgroundColor: activity.daySleep() ? '#77FFC2' : '#deece6'}\">\
-//		<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.SleepPlace[activity.place()]\" /> <span data-bind=\"text: duration()\" />min<br />\
-//	</div>\
-//<!-- /ko -->\
-//<!-- ko if: selected() -->\
-//	<div class=\"infoBubble\" style=\"z-index: 10; min-height: 30px; width: 150px; left: 160px; border-color: #4A9E78\" data-bind=\"click: clicked, style: {bottom: (start() + (duration() / 2) - 14) + 'px', backgroundColor: activity.daySleep() ? '#77FFC2' : '#deece6'}\">\
-//		<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.SleepPlace[activity.place()]\" /> <span data-bind=\"text: duration()\" />minut<br />\
-//		<span style=\"font-size: 10px\" data-bind=\"text: 'od: ' + moment(activity.startedOn()).format('HH:mm') + ' do: ' + moment(activity.endedOn()).format('HH:mm')\" /><br/>\
-//		<!-- ko if: activity.quality() -->\
-//		<span style=\"font-size: 10px\" data-bind=\"text: 'Quality: ' + DrBaby.Model.SleepQuality[activity.quality()]\" />\
-//		<!-- /ko -->\
-//	</div>\
-//<!-- /ko -->");
 }
