@@ -13,6 +13,10 @@
 			this.daySleep = ko.observable<boolean>();
 			this.entityName = "sleep";
 		}
+
+		protected async _saveInternal(service: Data.WebService.IAppService): Promise<void> {
+			await service.saveSleep(this);
+		}
 	}
 
 	export enum SleepQuality {

@@ -3,7 +3,7 @@ body {
 	padding: 0px;
 	font-size: 14px;
 	font-family: 'Segoe UI SemiLight', sans-serif;
-	background: silver;
+	background: #8db7ce;
 }
 
 textarea {
@@ -32,19 +32,21 @@ div.main {
 }
 
 .action {
-	background: #aaaaaa;
+	background: #4e5c6d;
+	color: white;
 	border: solid 2px black;
-	border-radius: 15px;
+	border-radius: 8px;
 	padding: 10px;
 	text-align: center;
-	margin: 0px 10px;
 }
 
 .buttonBig {
-	height: 75px;
+	height: 50px;
 	padding-top: 25px;
 	font-size: 32px;
 	font-weight: bold;
+	margin-bottom: 10px;
+	min-width: 230px;
 }
 
 .indexLine {

@@ -1,17 +1,17 @@
 ﻿module DrBaby.UI {
 	export class MainPage extends BasePage {
 		public lastSleep: KnockoutObservable<Model.Sleep>;
-		public lastSleepLabel: KnockoutComputed<string>;
+		public lastSleepLabel: KnockoutObservable<string>;
 		public activeSleep: KnockoutObservable<Model.Sleep>;
-		public activeSleepDuration: KnockoutComputed<string>; 
-		public fallingAsleepDuration: KnockoutComputed<string>; 
+		public activeSleepDurationLabel: KnockoutObservable<string>; 
+		public fallingAsleepDurationLabel: KnockoutObservable<string>; 
 		public lastFeeding: KnockoutObservable<Model.Feeding>;
-		public lastFedLabel: KnockoutComputed<string>;
+		public lastFedLabel: KnockoutObservable<string>;
 		public activeFeeding: KnockoutObservable<Model.Feeding>;
-		public activeFeedingDuration: KnockoutComputed<string>;
+		public activeFeedingDurationLabel: KnockoutObservable<string>;
 		public feedingActionLabel: KnockoutComputed<string>;
-		public actualTime: KnockoutComputed<string>;
-		public timeLine: KnockoutObservableArray<ActivityViewList>;
+		public actualTime: KnockoutObservable<string>;
+		public timeLine: TimeLine;
 		public selectedActivity: KnockoutObservable<ActivityView>;
 		public daysSinceBirth: number;
 
@@ -21,55 +21,20 @@
 
 			this.daysSinceBirth = moment().diff(moment(new Date(2018, 7, 25)), "days") + 1;
 
-			this.actualTime = ko.computed<string>(() => {
-				var now = Application.now();
-				return moment(now).format("HH:mm");
-			}, this);
+			this.actualTime = ko.observable<string>(moment(Application.now()).format("HH:mm"));
 
 			this.lastSleep = ko.observable<Model.Sleep>();
-			this.lastSleepLabel = ko.computed<string>(() => {
-				var now = Application.now();
-				var lastSleep = this.lastSleep();
-				if (lastSleep) {
-					var lastSleepDiff = moment(now).diff(moment(lastSleep.endedOn()), "second");
-					return this._getDurationLabel(lastSleepDiff);
-				}
-				return "N/A"
-			}, this);
+			this.lastSleepLabel = ko.observable<string>("N/A");
 
 			this.activeSleep = ko.observable<Model.Sleep>();
-			this.activeSleepDuration = ko.computed<string>(() => {
-				var now = Application.now();
-				if (this.activeSleep())
-					return this._getDurationLabel(moment(now).diff(moment(this.activeSleep().startedOn()), "seconds"));
-				return "";
-			}, this);
-
-			this.fallingAsleepDuration = ko.computed<string>(() => {
-				var now = Application.now();
-				if (this.activeSleep())
-					return this._getDurationLabel(moment(now).diff(moment(this.activeSleep().lullingStartedOn()), "seconds"), true, false);
-				return "";
-			}, this);
+			this.activeSleepDurationLabel = ko.observable<string>("");
+			this.fallingAsleepDurationLabel = ko.observable<string>("");
 
 			this.lastFeeding = ko.observable<Model.Feeding>();
-			this.lastFedLabel = ko.computed<string>(() => {
-				var now = Application.now();
-				var lastFeeding = this.lastFeeding();
-				if (lastFeeding && lastFeeding.endedOn()) {
-					var lastFedDiff = moment(now).diff(moment(lastFeeding.endedOn()), "second");
-					return this._getDurationLabel(lastFedDiff);
-				}
-				return "N/A"
-			}, this);
+			this.lastFedLabel = ko.observable<string>("N/A");
 
 			this.activeFeeding = ko.observable<Model.Feeding>();
-			this.activeFeedingDuration = ko.computed<string>(() => {
-				var now = Application.now();
-				if (this.activeFeeding())
-					return this._getDurationLabel(moment(now).diff(moment(this.activeFeeding().startedOn()), "seconds"), true, false);
-				return "";
-			}, this);
+			this.activeFeedingDurationLabel = ko.observable<string>("");
 
 			this.feedingActionLabel = ko.computed<string>(() => {
 				var lastFeeding = this.lastFeeding();
@@ -80,24 +45,52 @@
 				return "Feed";
 			}, this);
 
-			this.timeLine = ko.observableArray<ActivityViewList>([]);
+			Application.now.subscribe(now => {
+				// actual time
+				this.actualTime(moment(now).format("HH:mm"));
+				// sleep duration labels
+				var activeSleep = this.activeSleep();
+				if (activeSleep) {
+					this.activeSleepDurationLabel(this._getDurationLabel(moment(now).diff(moment(activeSleep.startedOn()), "seconds")));
+					this.fallingAsleepDurationLabel(this._getDurationLabel(moment(now).diff(moment(activeSleep.lullingStartedOn()), "seconds"), true, false));
+				}
+				else {
+					this.lastSleepLabel(this._getLastActivityDiff(now, this.lastSleep()));
+					this.activeSleepDurationLabel("");
+					this.fallingAsleepDurationLabel("");
+				}
+				this.lastSleepLabel(this._getLastActivityDiff(now, this.lastSleep()));
+				// activeFeedingDuration
+				var activeFeeding = this.activeFeeding();
+				if (activeFeeding) {
+					this.activeFeedingDurationLabel(this._getDurationLabel(moment(now).diff(moment(activeFeeding.startedOn()), "seconds"), true, false));
+				}
+				else {
+					this.lastFedLabel(this._getLastActivityDiff(now, this.lastFeeding()));
+					this.activeFeedingDurationLabel("");
+				}
+			}, this);
+
 			var mmtNow = moment().add("hours", 2).startOf("hour");
 			var mmtYesterday = moment(mmtNow).subtract("day", 1).startOf("day");
-			if (mmtNow.get("hour") <= 7) {
-				this.timeLine.push(new ActivityViewList(this, moment(mmtYesterday).set("hour", 19).toDate(), mmtNow.toDate(), false));
-				this.timeLine.push(new ActivityViewList(this, moment(mmtYesterday).set("hour", 7).toDate(), moment(mmtYesterday).set("hour", 19).toDate(), true));
-			}
-			else if (mmtNow.get("hour") >= 19) {
-				this.timeLine.push(new ActivityViewList(this, moment(mmtNow).set("hour", 19).toDate(), mmtNow.toDate(), false));
-				this.timeLine.push(new ActivityViewList(this, moment(mmtNow).set("hour", 7).toDate(), moment(mmtNow).set("hour", 19).toDate(),true));
-			}
-			else {
-				this.timeLine.push(new ActivityViewList(this, moment(mmtNow).set("hour", 7).toDate(), mmtNow.toDate(), true));
-				this.timeLine.push(new ActivityViewList(this, moment(mmtYesterday).set("hour", 19).toDate(), moment(mmtNow).set("hour", 7).toDate(), false));
+			var mmtFrom: Moment;
+			if (mmtNow.get("hour") <= 7)
+				mmtFrom = moment(mmtYesterday).set("hour", 7);
+			else if (mmtNow.get("hour") >= 19)
+				mmtFrom = moment(mmtNow).set("hour", 7);
+			else 
+				mmtFrom = moment(mmtYesterday).set("hour", 19);
 
-			}
-
+			this.timeLine = new TimeLine(this, mmtFrom, mmtNow);
 			this.selectedActivity = ko.observable<ActivityView>();
+		}
+
+		private _getLastActivityDiff(now: number, activity: Model.Activity): string {
+			if (activity && activity.endedOn()) {
+				var activityDiff = moment(now).diff(moment(activity.endedOn()), "second");
+				return this._getDurationLabel(activityDiff);
+			}
+			return "N/A"
 		}
 
 		private m_bIsLoaded: boolean;
@@ -119,37 +112,27 @@
 						this.activeFeeding(lastFeedings[0]);					
 				}
 
-
-				var activities = await service.loadActivitiesBetween(this.timeLine()[this.timeLine().length - 1].fromDate, new Date());
-
-				for (var activityDay of this.timeLine()) {
-					activityDay.loadActivities(activities);
-				}
+				var activities = await service.loadActivitiesBetween(this.timeLine.mmtFrom.toDate(), new Date());
+				this.timeLine.addActivites(activities);
 
 				this.m_bIsLoaded = true;
 			}
 		}
 
-		private _loadDay(day: ActivityViewList, activities: Model.Activity[]): void {
-			day.loadActivities(activities.filter(a => (a instanceof Model.Diaper) || a.endedOn()));
-		}
+		public async loadMore(): Promise<void> {
+			var prevFrom = this.timeLine.mmtFrom.toDate();
+			var mmtFrom = moment(this.timeLine.mmtFrom).subtract("day", 1);
 
-		public async addDay(): Promise<void> {
 			var service = Data.WebService.ServiceFactory.instance.connect();
-			var lastTimeLine = this.timeLine()[this.timeLine().length - 1];
-			var toDate = moment(lastTimeLine.fromDate).toDate();
-			var fromDate = moment(lastTimeLine.fromDate).subtract("hour", 12).toDate();
+			var activities = await service.loadActivitiesBetween(mmtFrom.toDate(), prevFrom);
 
-			var activities = await service.loadActivitiesBetween(fromDate, toDate);
-
-			var activityDay = new ActivityViewList(this, fromDate, toDate, !lastTimeLine.isDay);
-			activityDay.loadActivities(activities);
-			this.timeLine.push(activityDay);
+			this.timeLine.setRange(mmtFrom, this.timeLine.mmtTo);
+			this.timeLine.addActivites(activities);
 		}
 
 		public async addEvent(): Promise<void> {
 			var startedOn = new Date();
-
+			
 			this.messageBox(index => {
 				if (index < 2) {
 					this._addDiaper(startedOn, index === 0);
@@ -158,11 +141,6 @@
 					this._addNote(startedOn);
 				}
 			}, this, "Event", false, "Cancel", ["Poop", "Pee", "Note"]);
-		}
-
-		private get currentTimeLine(): ActivityViewList {
-			var result = this.timeLine().firstOrDefault(tl => tl.currentTime() >= 0)
-			return result;
 		}
 
 		private async _addDiaper(startedOn: Date, isPoo: boolean): Promise<void> {
@@ -174,9 +152,8 @@
 			this.messageBox(index => {
 				diaper.amount(10000 + index);
 
-				var service = Data.WebService.ServiceFactory.instance.connect();
-				service.saveDiaper(diaper).then(() => {
-					this.currentTimeLine.addActivity(diaper);
+				diaper.save().then(() => {
+					this.timeLine.addActivity(diaper);
 				});
 			}, this, "Amount", false, "Cancel", ["Small", "Normal", "Huge", "King"]);
 		}
@@ -192,30 +169,23 @@
 					var note = new Model.Note();
 					note.text(noteText);
 					event.addNote(note);
-					var service = Data.WebService.ServiceFactory.instance.connect();
-					service.saveEvent(event);
-					this.currentTimeLine.addActivity(event);
+					event.save().then(() => {
+						this.timeLine.addActivity(event);
+					});
 				}
 			});
 			notePage.show();
 		}
 
-		public startNewSleep(): void {
+		public async startNewSleep(): Promise<void> {
 			var startedOn = new Date();
 			var newSleep = new Model.Sleep();
 			newSleep.lullingStartedOn(startedOn);
-
+			this.activeSleepDurationLabel("00:00");
+			this.fallingAsleepDurationLabel("00:00");
 			this.activeSleep(newSleep);
 
-			//var sleepPage = new SleepPage(AppForm.instance, <Model.SleepPlace>index, startedOn);
-			//sleepPage.saved.add(this, (sender, args) => {
-			//	var service = Data.WebService.ServiceFactory.instance.connect();
-			//	service.saveSleep(sleepPage.sleep).then(() => {
-			//		this.lastSleep(sleepPage.sleep);
-			//		this.timeLine()[0].addActivity(sleepPage.sleep);
-			//	});
-			//});
-			//sleepPage.show();
+			await newSleep.save();
 		}
 
 		public async finishActiveSleep(): Promise<void> {
@@ -225,21 +195,24 @@
 			this.messageBox(index => {
 				activeSleep.endedOn(wokeUpOn);
 				activeSleep.place(<Model.SleepPlace>(index));
-				var service = Data.WebService.ServiceFactory.instance.connect();
-				service.saveSleep(activeSleep).then(() => {
+				activeSleep.save().then(() => {
 					this.lastSleep(activeSleep);
-					this.timeLine()[0].addActivity(activeSleep);
+					this.timeLine.addActivity(activeSleep);
 					this.activeSleep(undefined);
 				});
 			}, this, "Place", false, "Cancel", ["Cot", "Scarf", "Carrier", "Stroller", "Couch", "Bed", "rms", "Car", "Other"]);
 		}
 
-		public fallAsleep(when: Date): void {
-			if (this.activeSleep())
-				this.activeSleep().startedOn(when);
+		public async fallAsleep(when: Date): Promise<void> {
+			var activeSleep = this.activeSleep();
+			if (activeSleep) {
+				activeSleep.startedOn(when);
+				await activeSleep.save();
+			}
 		}
 
-		public cancelActiveSleep(): void {
+		public async cancelActiveSleep(): Promise<void> {
+			await this.activeSleep().delete();
 			this.activeSleep(undefined);
 		}
 
@@ -249,7 +222,7 @@
 			return fellAsleepMmnt.format("hh:mm") + " - " + (Model.SleepPlace[sleep.place()]) + " " + this._getDurationLabel(duration);
 		}
 
-		public startNewFeeding(): void {
+		public async startNewFeeding(): Promise<void> {
 			var breast = Model.Breast.Left;
 			var lastFeeding = this.lastFeeding();
 			if (lastFeeding && lastFeeding.breast() === Model.Breast.Left)
@@ -259,17 +232,10 @@
 			newFeeding.startedOn(new Date());
 			newFeeding.breast(breast);
 
+			this.activeFeedingDurationLabel("00:00");
 			this.activeFeeding(newFeeding);
 
-			//var feedingPage = new FeedingPage(AppForm.instance, breast);
-			//feedingPage.saved.add(this, (sender, args) => {
-			//	var service = Data.WebService.ServiceFactory.instance.connect();
-			//	service.saveFeeding(feedingPage.feeding).then(() => {
-			//		this.lastFeeding(feedingPage.feeding);
-			//		this.timeLine()[0].addActivity(feedingPage.feeding);
-			//	});
-			//});
-			//feedingPage.show();
+			await newFeeding.save();
 		}
 
 		public getLastFeedingLabel(feeding: Model.Feeding): string {
@@ -282,15 +248,19 @@
 			var activeFeeding = this.activeFeeding();
 			activeFeeding.endedOn(new Date());
 
-			var service = Data.WebService.ServiceFactory.instance.connect();
-			await service.saveFeeding(activeFeeding);
+			await activeFeeding.save();
 			this.lastFeeding(activeFeeding);
-			this.timeLine()[0].addActivity(activeFeeding);
+			this.timeLine.addActivity(activeFeeding);
 			this.activeFeeding(undefined);
 		}
 
-		public cancelActiveFeeding(): void {
-			this.activeFeeding(undefined);
+		public async cancelActiveFeeding(): Promise<void> {
+			var activeFeeding = this.activeFeeding();
+			var deleted = activeFeeding.delete();
+			if (deleted) {
+				this.timeLine.removeActivity(activeFeeding);
+				this.activeFeeding(undefined);
+			}
 		}
 
 		public selectActivity(activity: ActivityView): void {
@@ -306,115 +276,135 @@
 		}
 
 		public async deleteActivity(activity: Model.Activity): Promise<void> {
-			var service = Data.WebService.ServiceFactory.instance.connect();
-			var deleted = await service.deleteActivity(activity);
+			var deleted = activity.delete();
 			if (deleted)
-				this.timeLine().forEach(tl => tl.removeActivity(activity), this);
+				this.timeLine.removeActivity(activity);
 		}
 	}
 
-	class TimeLineSlot {
-		public hourLabel: string;
+	class TimeLineHour {
+		public time: Moment;
+		public hour: number;
 		public isDaySlot: boolean;
+		public hourLabel: string;
+		public dayLabel: string;
 
-		constructor(hl: string, day: boolean) {
-			this.hourLabel = hl;
-			this.isDaySlot = day;
+		constructor(time: Moment) {
+			this.time = time;
+			this.hourLabel = time.format("HH");
+			this.dayLabel = time.format("dd D.M.");
+			this.hour = time.get("hour");
+			this.isDaySlot = (this.hour >= 7 && this.hour < 19);
 		}
 	}
 
-	export class ActivityViewList {
-		public fromDate: Date;
-		public toDate: Date;
+	export class TimeLine {
+		public mmtFrom: Moment;
+		public mmtTo: Moment;
 		public activities: KnockoutObservableArray<ActivityView>;
-		public slots: KnockoutObservableArray<TimeLineSlot>;
-		public isDay: boolean;
+		public slots: KnockoutObservableArray<TimeLineHour>;
 		public page: MainPage;
-		public currentTime: KnockoutComputed<number>;
+		public currentTime: KnockoutObservable<number>;
 
-		constructor(page: MainPage, fromDate: Date, toDate: Date, isDay: boolean) {
+		constructor(page: MainPage, mmtFrom: Moment, mmtTo: Moment) {
 			this.page = page;
-			this.fromDate = fromDate;
-			this.toDate = toDate;
+			this.mmtFrom = mmtFrom;
+			this.mmtTo = mmtTo;
 			this.activities = ko.observableArray<ActivityView>([]);
-			this.isDay = isDay;
 
-			var slots: TimeLineSlot[] = [];
+			this.slots = ko.observableArray<TimeLineHour>([]);
+			this.setRange(mmtFrom, mmtTo)
 
-			var mmtFrom = moment(this.fromDate).startOf("hour").subtract("hour", 1);
-			var mmtTo = moment(this.toDate).startOf("hour").subtract("hour", 1);
+			this.currentTime = ko.observable<number>(0);
+
+			Application.now.subscribe(value => {
+				if (this.mmtTo.diff(moment(), "minutes") <= 60)
+					this.setRange(this.mmtFrom, moment(this.mmtTo).add("hour", 1));
+
+				this._updateCurrentTime();
+			}, this);
+		}
+
+		private _updateCurrentTime(): void {
+			var mmtBaseLine = moment(this.mmtFrom).startOf("hour");
+			this.currentTime(moment().diff(mmtBaseLine, "minutes"));
+		}
+
+		public setRange(from: Moment, to: Moment): void {
+			var mmtFrom = moment(from).startOf("hour").subtract("hour", 1);
+			var mmtTo = moment(to).startOf("hour").subtract("hour", 1);
+
+			var slots = this.slots();
+			slots.splice(0);
 
 			while (!mmtTo.isSame(mmtFrom)) {
-				slots.push(new TimeLineSlot(mmtTo.format("HH"), isDay));
-				mmtTo.subtract("hour", 1);
+				slots.push(new TimeLineHour(mmtTo));
+				mmtTo = moment(mmtTo).subtract("hour", 1);
 			}
+			this.slots.valueHasMutated();
 
-			this.slots = ko.observableArray<TimeLineSlot>(slots);
+			this.mmtFrom = from;
+			this.mmtTo = to;
 
-			this.currentTime = ko.computed<number>(() => {
-				var now = Application.now();
-				if (this.dateInViewsRange(new Date())) {
-					var mmtBaseLine = moment(this.fromDate).startOf("hour");
-					return moment().diff(mmtBaseLine, "minutes");
-				}
-				return -1;
-			}, this);
+			// remove existing if predicate is not satisfied, update baseline to the rest
+			var activities = this.activities();
+			for (let i = activities.length - 1; i >= 0; i--) {
+				if (!this._activityPredicate(activities[i].activity, false))
+					activities.splice(i, 1);
+				else
+					activities[i].updateBaseLine(this.mmtFrom);
+			}
+			this.activities.valueHasMutated();
 
-			//if (moment(date).startOf('day').isSame(moment().startOf('day'))) {
-			//	Application.actualHour.subscribe(hour => this._generateTimelineHours(hour), this);
-			//	this._generateTimelineHours(Application.actualHour());
-			//}
-			//else {
-			//	this._generateTimelineHours(23);
-			//}
 		}
 
-		private _generateTimelineHours(max: number): void {
-			var slots: TimeLineSlot[] = [];
-			for (var i = max; i >= 0; i--)
-				slots.push(new TimeLineSlot(i.toString(), i < 18 && i > 5));
-			this.slots(slots);
-		}
-
-		public loadActivities(activities: Model.Activity[]): void {
-			var relevantActivities = activities.filter(a => this._activityPredicate(a));
-			var prevSleep: Model.Sleep;
-
+		public addActivites(newActivities: Model.Activity[]): void {
+			var activities = this.activities();
+			var relevantActivities = newActivities.filter(a => this._activityPredicate(a));
 			for (let activity of relevantActivities) {
-				this.addActivity(activity);
+				let activityView = this._getActivityView(activity);
+				activities.push(activityView);
 			}
+			this.activities.valueHasMutated();
 		}
 
-		private _activityPredicate(activity: Model.Activity): boolean {
+		private _activityPredicate(activity: Model.Activity, bCheckExisting: boolean = true): boolean {
 			if (activity.endedOn() || (activity instanceof Model.Diaper)) {
 				if (this.dateInViewsRange(activity.startedOn()) || this.dateInViewsRange(activity.endedOn()))
-					return true;
+					return !bCheckExisting || !this.activities().any(av => av.activity.id.Value === activity.id.Value);
 			}
 			return false;
 		}
 
 		public dateInViewsRange(date: Date): boolean {
 			var mmt = moment(date);
-			if ((mmt.isSame(this.fromDate) || mmt.isAfter(this.fromDate)) && (mmt.isSame(this.toDate) || mmt.isBefore(this.toDate)))
+			if ((mmt.isSame(this.mmtFrom) || mmt.isAfter(this.mmtFrom)) && (mmt.isSame(this.mmtTo) || mmt.isBefore(this.mmtTo)))
 				return true;
 
 			return false;
 		}
 
-		public addActivity(activity: Model.Activity): void {
+		private _getActivityView(activity: Model.Activity): ActivityView {
 			let activityView: ActivityView;
 
 			if (activity instanceof Model.Sleep)
-				activityView = new SleepView(this, activity, this.fromDate);
+				activityView = new SleepView(this, activity);
 			else if (activity instanceof Model.Feeding)
-				activityView = new FeedingView(this, activity, this.fromDate);
+				activityView = new FeedingView(this, activity);
 			else if (activity instanceof Model.Diaper)
-				activityView = new DiaperView(this, activity, this.fromDate);
+				activityView = new DiaperView(this, activity);
 			else if (activity instanceof Model.Event)
-				activityView = new EventView(this, activity, this.fromDate);
+				activityView = new EventView(this, activity);
 			else
-				activityView = new ActivityView(this, activity, this.fromDate);
+				activityView = new ActivityView(this, activity);
 
+			activityView.updateBaseLine(this.mmtFrom);
+
+			return activityView;
+		}
+
+		public addActivity(activity: Model.Activity): void {
+			var activityView = this._getActivityView(activity);
 			this.activities.push(activityView);
 		}
 
@@ -426,17 +416,21 @@
 		}
 	}
 
-	Resco.Controls.KOEngine.instance.addTemplate("tmplMainPage", "<div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #eeeeee\">\
-	<span>Dominik - <span data-bind=\"text: daysSinceBirth\" />.den</span><br />\
+	//style=\"background: #d3ffd6\" 
+
+	Resco.Controls.KOEngine.instance.addTemplate("tmplMainPage", "<div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #4e5c6d; color: white; font-weight: bold\">\
+		<span>Dominik - <span data-bind=\"text: daysSinceBirth\" />.den</span><br />\
+	</div>\
+	<div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #e8f7f9\">\
 	<span data-bind=\"text: actualTime, css: {clockBig: !activeFeeding() && !activeSleep(), clockMedium: activeFeeding() || activeSleep()}\" />\
 	</div>\
 	<!-- ko if: !activeFeeding() && !activeSleep() -->\
-	<div style=\"padding: 5px; margin: 5px; display: flex; flex-direction: row\">\
+	<div style=\"padding: 10px; display: flex; flex-direction: row; background: #8db7ce; border-bottom: solid 1px black\">\
 		<div class=\"action\" style=\"flex: 1 1 47%\" data-bind=\"click: startNewFeeding\">\
 			<span data-bind=\"text: feedingActionLabel\" /><br />\
 			<span class=\"clockSmall\" data-bind=\"text: lastFedLabel\" />\
 		</div>\
-		<div class=\"action\" style=\"flex: 0 1 6%; font-size: 50px\" data-bind=\"click: addEvent\">\
+		<div class=\"action\" style=\"flex: 0 1 6%; font-size: 50px; margin: 0px 10px\" data-bind=\"click: addEvent\">\
 			+\
 		</div>\
 		<div class=\"action\" style=\"flex: 1 1 47%\" data-bind=\"click: startNewSleep\">\
@@ -446,55 +440,67 @@
 	</div>\
 	<!-- /ko -->\
 	<!-- ko if: activeSleep() -->\
-	<div style=\"padding: 5px; margin: 5px; display: flex; flex-direction: column; text-align: center\">\
+	<div style=\"padding: 5px; margin: 5px; display: flex; justify-content: center; align-items: center; text-align: center\" data-bind=\"style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column'}\">\
 		<!-- ko if: !activeSleep().startedOn() -->\
-		Zaspava\
-		<span class=\"clockBig\" data-bind=\"text: fallingAsleepDuration\" />\
-		<div class=\"action buttonBig\" style=\"background: #d3ffd6\" data-bind=\"click: fallAsleep.bind($data, new Date())\">\
-			Zaspal\
+		<div style=\"flex-grow: 1\">\
+			Zaspava<br />\
+			<span class=\"clockBig\" data-bind=\"text: fallingAsleepDurationLabel\" />\
 		</div>\
-		<br />\
-		<div class=\"action buttonBig\" style=\"\" data-bind=\"click: cancelActiveSleep\">\
-			Nebude spat\
+		<div data-bind=\"style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%'}\">\
+			<div class=\"action buttonBig\" data-bind=\"click: fallAsleep.bind($data, new Date())\">\
+				Zaspal\
+			</div>\
+			<div class=\"action buttonBig\" data-bind=\"click: cancelActiveSleep\">\
+				Nebude spat\
+			</div>\
 		</div>\
 		<!-- /ko -->\
 		<!-- ko if: activeSleep().startedOn() -->\
-		Spinka\
-		<span class=\"clockBig\" data-bind=\"text: activeSleepDuration\" />\
-		<div class=\"action buttonBig\" style=\"background: #d3ffd6\" data-bind=\"click: finishActiveSleep\">\
-			Vstava\
+		<div style=\"flex-grow: 1\">\
+			Spinka<br />\
+			<span class=\"clockBig\" data-bind=\"text: activeSleepDurationLabel\" />\
 		</div>\
-		<br />\
-		<div class=\"action buttonBig\" style=\"\" data-bind=\"click: fallAsleep.bind($data, undefined)\">\
-			Este nezaspal\
+		<div data-bind=\"style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%'}\">\
+			<div class=\"action buttonBig\" data-bind=\"click: finishActiveSleep\">\
+				Vstava\
+			</div>\
+			<div class=\"action buttonBig\" data-bind=\"click: fallAsleep.bind($data, undefined)\">\
+				Este nezaspal\
+			</div>\
 		</div>\
 		<!-- /ko -->\
 	</div>\
 	<!-- /ko -->\
 	<!-- ko if: activeFeeding() && !activeSleep() -->\
-	<div style=\"padding: 5px; margin: 5px; display: flex; flex-direction: column; text-align: center\">\
-		Feeding\
-		<span class=\"clockBig\" data-bind=\"text: activeFeedingDuration\" />\
-		<div class=\"action buttonBig\" style=\"background: #d3ffd6\" data-bind=\"click: finishActiveFeeding\">\
-			Dopapal\
+	<div style=\"padding: 5px; margin: 5px; display: flex; justify-content: center; align-items: center; text-align: center\" data-bind=\"style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column'}\">\
+		<div style=\"flex-grow: 1\">\
+			Papá<br />\
+			<span class=\"clockBig\" data-bind=\"text: activeFeedingDurationLabel\" />\
 		</div>\
-		<br />\
-		<div class=\"action buttonBig\" style=\"\" data-bind=\"click: cancelActiveFeeding\">\
-			Zrusit\
+		<div data-bind=\"style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%'}\">\
+			<div class=\"action buttonBig\" data-bind=\"click: finishActiveFeeding\">\
+				Dopapal\
+			</div>\
+			<div class=\"action buttonBig\" data-bind=\"click: cancelActiveFeeding\">\
+				Zrusit\
+			</div>\
 		</div>\
 	</div>\
 	<!-- /ko -->\
-	<!-- ko foreach: timeLine -->\
-		<div style=\"box-sizing: border-box; border-bottom: solid 1px black; border-top: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #eeeeee\">\
-			<span data-bind=\"text: moment(fromDate).format('dddd, DD.MM.YYYY') + ' - ' + (isDay ? 'Day' : 'Night')\"/><br />\
-		</div>\
+	<!-- ko with: timeLine -->\
 		<div style=\"position: relative; width: 100%; overflow: hidden\">\
 			<!-- ko foreach: slots -->\
-				<div style=\"padding: 3px; box-sizing: border-box; border-bottom: dotted 1px #aaaaaa; height: 30px; width: 100%\" data-bind=\"style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }\">\
-					<span style=\"position: relative; top: 10px; font-size: 10px\" data-bind=\"text: hourLabel + ':30 ', style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }\" />\
+				<div style=\"position: relative; box-sizing: border-box; border-bottom: dotted 1px #aaaaaa; height: 30px; width: 100%\" data-bind=\"style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }\">\
+					<span style=\"position: absolute; left: 2px; bottom: 2px; font-size: 10px; color: silver\" data-bind=\"text: hourLabel + ':30 '\" />\
+					<span style=\"position: absolute; right: 2px; bottom: 2px; font-size: 10px; color: silver\" data-bind=\"text: dayLabel\" />\
 				</div>\
-				<div style=\"padding: 3px; box-sizing: border-box; border-bottom: dashed 1px #555555; height: 30px; width: 100%\" data-bind=\"style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }\">\
-					<span style=\"position: relative; top: 9px\" data-bind=\"text: hourLabel + ':00 ', style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }\" />\
+				<div style=\"position: relative; box-sizing: border-box; height: 30px; width: 100%\" data-bind=\"style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4', borderBottom: hour === 0 ? 'solid 2px black' : 'dashed 1px #555555' }\">\
+					<span style=\"position: absolute; left: 2px; bottom: 2px\" data-bind=\"text: hourLabel + ':00 '\" />\
+					<!-- ko if: hour === 0 -->\
+						<div style=\"position: absolute; left: 0px; bottom: 2px; width: 100%; text-align: center\">\
+							<span style=\"color: silver\" data-bind=\"text: time.format('dddd D.M.YYYY')\" />\
+						</div>\
+					<!-- /ko -->\
 				</div>\
 			<!-- /ko -->\
 			<!-- ko if: currentTime() >= 0 -->\
@@ -508,7 +514,7 @@
 			<!-- /ko -->\
 		</div>\
 	<!-- /ko -->\
-	<div style=\"box-sizing: border-box; border-bottom: solid 1px black; border-top: solid 1px black; width: 100%; height: 40px; text-align: center; font-size: 14px; padding: 3px; padding-top: 20px; background: #eeeeee\" data-bind=\"click: addDay\">\
-		<span>Load previous day</span>\
+	<div style=\"box-sizing: border-box; border-bottom: solid 1px black; border-top: solid 1px black; width: 100%; height: 40px; text-align: center; font-size: 14px; padding: 10px; background: #eeeeee\" data-bind=\"click: loadMore\">\
+		<span>Load more...</span>\
 	</div>");
 }

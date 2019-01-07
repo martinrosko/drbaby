@@ -1,7 +1,7 @@
 ﻿module DrBaby.UI {
 	export class DiaperView extends ActivityView {
-		constructor(parent: ActivityViewList, activity: Model.Activity, relatedToDate: Date) {
-			super(parent, activity, relatedToDate);
+		constructor(parent: TimeLine, activity: Model.Activity) {
+			super(parent, activity);
 
 			this.darkColor((<Model.Diaper>activity).load() === Model.DiaperLoad.Pee ? "orange" : "brown");
 			this.lightColor((<Model.Diaper>activity).load() === Model.DiaperLoad.Pee ? "#FFEBB2" : "#FFD5A1");

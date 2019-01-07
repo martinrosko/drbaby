@@ -1,7 +1,7 @@
 ﻿module DrBaby.UI {
 	export class FeedingView extends ActivityView {
-		constructor(parent: ActivityViewList, activity: Model.Activity, relatedToDate: Date) {
-			super(parent, activity, relatedToDate);
+		constructor(parent: TimeLine, activity: Model.Activity) {
+			super(parent, activity);
 
 			this.darkColor("navy");
 			this.lightColor("#EEEEF8");
@@ -41,18 +41,16 @@
 		}
 	}
 
-	Resco.Controls.KOEngine.instance.addTemplate("tmplFeedingViewWide", "<span style =\"font-weight: bold\" data-bind=\"text: activity.breast() === DrBaby.Model.Breast.Left ? 'Lavy' : 'Pravy'\" /> <span data-bind=\"text: duration()\" />minut \
+	Resco.Controls.KOEngine.instance.addTemplate("tmplFeedingViewWide", "<span style =\"font-weight: bold\" data-bind=\"text: activity.breast() === DrBaby.Model.Breast.Left ? 'Lavy' : 'Pravy'\" /> <span data-bind=\"text: durationLabel()\" /> \
 <span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'\" />\
-<!-- ko if: !selected() -->\
-	<!-- ko if: activity.postDoses().length > 0 || activity.preDoses().length > 0 --><img style=\"width: 15px\" src=\"Images/Medicament.png\" /><!-- /ko -->\
-<!-- /ko -->");
+<!-- ko if: activity.postDoses().length > 0 || activity.preDoses().length > 0 --><img style=\"width: 15px\" src=\"Images/Medicament.png\" /><!-- /ko -->\
+<!-- ko if: activity.note() --><img style=\"width: 15px\" src=\"Images/Note.png\" /><!-- /ko -->");
 
-	Resco.Controls.KOEngine.instance.addTemplate("tmplFeedingView", "<!-- ko if: !selected() -->\
-	<span style=\"font-weight: bold\" data-bind=\"text: activity.breast() === DrBaby.Model.Breast.Left ? 'L' : 'P'\" /> <span data-bind=\"text: duration()\" />min\
-	<!-- ko if: activity.postDoses().length > 0 || activity.preDoses().length > 0 --><img style=\"width: 10px\" src=\"Images/Medicament.png\" /><!-- /ko -->\
-<!-- /ko -->");
+	Resco.Controls.KOEngine.instance.addTemplate("tmplFeedingView", "<span style=\"font-weight: bold\" data-bind=\"text: activity.breast() === DrBaby.Model.Breast.Left ? 'L' : 'P'\" /> <span data-bind=\"text: duration()\" />min\
+<!-- ko if: activity.postDoses().length > 0 || activity.preDoses().length > 0 --><img style=\"width: 10px\" src=\"Images/Medicament.png\" /><!-- /ko -->\
+<!-- ko if: activity.note() --><img style=\"width: 10px\" src=\"Images/Note.png\" /><!-- /ko -->");
 
-	Resco.Controls.KOEngine.instance.addTemplate("tmplFeedingViewSelected", "<span style =\"font-weight: bold\" data-bind=\"text: activity.breast() === DrBaby.Model.Breast.Left ? 'Lavy' : 'Pravy'\" /> <span data-bind=\"text: duration()\" />minut \
+	Resco.Controls.KOEngine.instance.addTemplate("tmplFeedingViewSelected", "<span style =\"font-weight: bold\" data-bind=\"text: activity.breast() === DrBaby.Model.Breast.Left ? 'Lavy' : 'Pravy'\" /> <span data-bind=\"text: durationLabel()\" /> \
 <span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'\" />\
 <!-- ko foreach: activity.preDoses() -->\
 	<div style=\"font-size: 10px\"><img style=\"width: 9px\" src=\"Images/Medicament.png\" /> pred: <span data-bind=\"text: name\" /></div>\

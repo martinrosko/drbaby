@@ -28,7 +28,7 @@
             this.bounds = new Resco.Rectangle(0, 0, 200, 200);
             this.content = this;
             this.contentTemplateName = null;
-			this.outerAreaBackgroundOpacity = 0.25;
+			this.outerAreaBackgroundOpacity = 0.75;
 			this.outerAreaZIndex = ko.observable<number>(1000);
 			this.closeOnOuterClick = true;
 			this.dialogResult = false;

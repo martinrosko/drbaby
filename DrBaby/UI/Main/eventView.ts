@@ -1,7 +1,7 @@
 ﻿module DrBaby.UI {
 	export class EventView extends ActivityView {
-		constructor(parent: ActivityViewList, activity: Model.Activity, relatedToDate: Date) {
-			super(parent, activity, relatedToDate);
+		constructor(parent: TimeLine, activity: Model.Activity) {
+			super(parent, activity);
 
 			this.darkColor("#333333");
 			this.lightColor("#eeeeee");

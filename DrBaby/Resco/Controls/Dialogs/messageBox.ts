@@ -27,7 +27,6 @@
             super(parent);
             this.content = this;
 			this.contentTemplateName = "tmplRescoMessageBox";
-            this.outerAreaBackgroundOpacity = 0.25;
             this.bounds.width(300);
 
             this.text = ko.observable("");

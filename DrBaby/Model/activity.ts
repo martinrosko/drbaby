@@ -16,5 +16,17 @@
 			note.regarding = this;
 			this.note(note);
 		}
+
+		public async save(): Promise<void> {
+			await this._saveInternal(Data.WebService.ServiceFactory.instance.connect());
+		}
+
+		protected async _saveInternal(service: Data.WebService.IAppService): Promise<void> {
+		}
+
+		public async delete(): Promise<boolean> {
+			var service = Data.WebService.ServiceFactory.instance.connect();
+			return await service.deleteActivity(this);
+		}
 	}
 }

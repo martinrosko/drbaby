@@ -4,7 +4,9 @@
 		protected m_service: Resco.Data.WebService.ICrmService;
 
 		public async loadSleeps(lastX: number): Promise<Model.Sleep[]> {
-			var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\" top=\"" + lastX + "\"><entity name=\"sleep\"><all-attributes /><order attribute=\"actualstart\" descending=\"true\" /><filter type=\"or\"></filter></entity></fetch>");
+			var ctx = new Resco.Data.WebService.FetchRequestParams();
+			ctx.maxCount = lastX;
+			var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"sleep\"><all-attributes /><order attribute=\"scheduledstart\" descending=\"true\" /><filter type=\"or\"></filter></entity></fetch>", ctx);
 			var result = serverEntities.slice(0, lastX).map(se => this._getSleepFromServerEntity(se));
 			return result;
 		}
@@ -33,7 +35,9 @@
 		}
 
 		public async loadFeedings(lastX: number): Promise<Model.Feeding[]> {
-			var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\" top=\"" + lastX + "\"><entity name=\"feeding\"><all-attributes /><order attribute=\"actualstart\" descending=\"true\" /><filter type=\"or\"></filter></entity></fetch>");
+			var ctx = new Resco.Data.WebService.FetchRequestParams();
+			ctx.maxCount = lastX;
+			var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"feeding\"><all-attributes /><order attribute=\"actualstart\" descending=\"true\" /><filter type=\"or\"></filter></entity></fetch>", ctx);
 
 			var result = serverEntities.slice(0, lastX).map(se => this._getFeedingFromServerEntity(se));
 			for (var feeding of result)

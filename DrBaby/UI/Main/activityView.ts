@@ -3,11 +3,12 @@
 		public start: KnockoutObservable<number>;
 		public end: KnockoutObservable<number>;
 		public duration: KnockoutObservable<number>;
+		public durationLabel: KnockoutComputed<string>;
 		public contentTemplateName: KnockoutComputed<string>;
 		public activity: Model.Activity;
 		public selected: KnockoutObservable<boolean>;
 		public showInfoBubble: KnockoutComputed<boolean>;
-		public parent: ActivityViewList;
+		public parent: TimeLine;
 		public previousActivity: KnockoutObservable<ActivityView>;
 		public showNotes: boolean;
 
@@ -16,25 +17,12 @@
 		public leftPosition: KnockoutComputed<number>;
 		public bottom: KnockoutObservable<number>;
 
-		constructor(parent: ActivityViewList, activity: Model.Activity, relatedToDate: Date) {
+		constructor(parent: TimeLine, activity: Model.Activity) {
 			this.parent = parent;
 			this.activity = activity;
 
-			var mmtBaseLine = moment(relatedToDate).startOf("hour");
-			var mmtStart = moment(activity.startedOn());
-			var start = mmtStart.diff(mmtBaseLine, "minutes");
-			this.start = ko.observable<number>(start);
-
-			if (activity.endedOn()) {
-				var mmtEnd = moment(activity.endedOn());
-				var end = mmtEnd.diff(mmtBaseLine, "minutes");
-				this.end = ko.observable<number>(end);
-				this.duration = ko.observable<number>(end - start);
-			}
-			else {
-				this.end = ko.observable<number>(start);
-				this.duration = ko.observable<number>(0);
-			}
+			this.start = ko.observable<number>(0);
+			this.end = ko.observable<number>(0);
 
 			this.darkColor = ko.observable<string>("black");
 			this.lightColor = ko.observable<string>("silver");
@@ -44,7 +32,7 @@
 			}, this);
 
 			this.showInfoBubble = ko.computed<boolean>(() => {
-				return this.activity.endedOn() && this.parent.dateInViewsRange(this.activity.endedOn());
+				return true; //this.activity.endedOn() && this.parent.dateInViewsRange(this.activity.endedOn());
 			}, this);
 			this.selected = ko.observable<boolean>(false);
 
@@ -56,7 +44,37 @@
 
 			this.previousActivity = ko.observable<ActivityView>();
 
+			this.duration = ko.observable<number>(0);
+			this.durationLabel = ko.computed<string>(() => {
+				var dur = this.duration();
+				var minuteLabel = "minut";
+				if (dur === 1)
+					minuteLabel = "minuta";
+				else if (dur <= 4)
+					minuteLabel = "minuty";
+
+				return dur + minuteLabel;
+			}, this);
+
 			this.showNotes = true;
+		}
+
+		public updateBaseLine(mmtFrom: Moment): void {
+			var mmtBaseLine = mmtFrom.startOf("hour")
+			var mmtStart = moment(this.activity.startedOn());
+			var start = mmtStart.diff(mmtBaseLine, "minutes");
+			this.start(start)
+
+			if (this.activity.endedOn()) {
+				var mmtEnd = moment(this.activity.endedOn());
+				var end = mmtEnd.diff(mmtBaseLine, "minutes");
+				this.end(end);
+				this.duration(end - start);
+			}
+			else {
+				this.end = ko.observable<number>(start);
+				this.duration(0);
+			}
 		}
 
 		public contentRendered(elements: HTMLElement[]): void {

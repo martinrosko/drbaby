@@ -44,15 +44,15 @@
 					throw new Resco.UnauthorizedAccessException("Please log in to access the content of this web application.", ex);
 				}
 
-				Application.wideScreen = ko.observable<boolean>(UI.AppForm.instance.size.width() > 480);
+				Application.wideScreen = ko.observable<boolean>(UI.AppForm.instance.size.width() > 640);
 				$(window).resize(function () {
 					UI.AppForm.instance.resize();
-					Application.wideScreen(UI.AppForm.instance.size.width() > 480);
+					Application.wideScreen(UI.AppForm.instance.size.width() > 640);
 				});
 				$(window).on({
 					"orientationchange": () => {
 						UI.AppForm.instance.resize();
-						Application.wideScreen(UI.AppForm.instance.size.width() > 480);
+						Application.wideScreen(UI.AppForm.instance.size.width() > 640);
 					}
 				});
 				$(document).prop("title", "DrBaby v" + Application.versionLabel);

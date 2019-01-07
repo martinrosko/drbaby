@@ -9,6 +9,10 @@
 			this.load = ko.observable<DiaperLoad>();
 			this.entityName = "diaper";
 		}
+
+		protected async _saveInternal(service: Data.WebService.IAppService): Promise<void> {
+			await service.saveDiaper(this);
+		}
 	}
 
 	export enum DiaperAmount {

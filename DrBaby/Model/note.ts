@@ -10,5 +10,15 @@
 			this.text = ko.observable<string>();
 			this.b64image = ko.observable<string>();
 		}
+
+		public async save(): Promise<void> {
+			var service = Data.WebService.ServiceFactory.instance.connect();
+			await service.saveNote(this);
+		}
+
+		public async delete(): Promise<void> {
+			var service = Data.WebService.ServiceFactory.instance.connect();
+			await service.deleteNote(this.id);
+		}
 	}
 }

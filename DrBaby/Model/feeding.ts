@@ -11,6 +11,10 @@
 			this.postDoses = ko.observableArray<Dose>([]);
 			this.entityName = "feeding";
 		}
+
+		protected async _saveInternal(service: Data.WebService.IAppService): Promise<void> {
+			await service.saveFeeding(this);
+		}
 	}
 
 	export enum Breast {
