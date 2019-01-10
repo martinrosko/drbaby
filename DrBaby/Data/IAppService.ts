@@ -1,5 +1,6 @@
 ﻿module DrBaby.Data.WebService {
 	export interface IAppService {
+		loadChild: (index: number) => Promise<Model.Child>;
 		loadSleeps: (lastX: number) => Promise<Model.Sleep[]>;
 		saveSleep: (sleep: Model.Sleep) => Promise<void>;
 		loadFeedings: (lastX: number) => Promise<Model.Feeding[]>;

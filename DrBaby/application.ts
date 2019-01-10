@@ -12,6 +12,7 @@
 		static now: KnockoutObservable<number> = ko.observable<number>(0);
 		static actualHour: KnockoutComputed<number>;
 		static wideScreen: KnockoutObservable<boolean>;
+		static child: Model.Child;
 
 		public static globalTimers: GlobalTimer[] = [];
 
@@ -28,6 +29,19 @@
 						logLevel = <Resco.LogLevel>level;
 				}
 				Application.log = new Resco.Logger(level, "DrBabyLog", true);
+
+				let childIndex = 0;
+				index = location.search.indexOf("chindex=");
+				if (index >= 0 && location.search.length > index) {
+					childIndex = Resco.strictParseInt(location.search.substr(index + 8, 1))
+					if (isNaN(childIndex))
+						childIndex = 0;
+				}
+
+				let initPage = "main";
+				index = location.search.indexOf("page=");
+				if (index >= 0 && location.search.length > index)
+					initPage = location.search.substr(index + 5);
 
 				Resco.Controls.KOEngine.instance.render(UI.AppForm.instance);
 
@@ -69,10 +83,26 @@
 					return moment().hours();
 				});
 
+				var appService = Data.WebService.ServiceFactory.instance.connect();
+				Application.child = await appService.loadChild(childIndex);
+				if (!Application.child)
+					throw new Resco.Exception("Child not found!");
+
+				if (ENVIRONMENT === EnvironmentType.MobileCrm) {
+					MobileCRM.UI.Form.requestObject(form => {
+						form.caption = Application.child.name + " - " + Application.child.daysSinceBirth + ".den";
+					});
+				}
+
 				UI.AppForm.instance.initializing(false);
 
-				var mainPage = new UI.MainPage(UI.AppForm.instance);
-				mainPage.show();
+				var page: UI.BasePage;
+				if (initPage.startsWith("stats"))
+					page = new UI.StatsPage(UI.AppForm.instance);
+				else
+					page = new UI.MainPage(UI.AppForm.instance);
+
+				page.show();
 			}
 			catch (ex) {
 				Application.LogException(ex);
@@ -106,6 +136,7 @@ Go back to the <a href=\"../Login.aspx?ReturnUrl=%2fWebInspections%2findex.html\
 <br />\
 <b>" + ex.name + ":</b> <span class=\"message\">" + ex.message + "</span>";
 
+			UI.AppForm.instance.initializing(false);
 			//UI.AppForm.instance.error(errorMessage);
 			Application.log.logException(ex);
 			MobileCRM.bridge.alert(errorMessage);

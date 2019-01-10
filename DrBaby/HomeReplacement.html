@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="Libraries/JSBridge.js"></script>
+</head>
+<body>
+	<script>
+		function updateHomeItems() {
+			try {
+				MobileCRM.FetchXml.Fetch.executeFromXML("<fetch resultformat=\"Array\" version=\"1.0\"><entity name=\"child\">\
+					<attribute name=\"id\" />\
+					<attribute name=\"name\" />\
+					<attribute name=\"sex\" />\
+					<attribute name=\"birthday\" />\
+					<order attribute=\"birthday\" descending=\"false\" />\
+					<filter type=\"or\"><condition attribute=\"ownerid\" operator=\"eq-userid\" /></filter></entity></fetch>", function (res) {
+						var items = [];
+						for (var i = 0; i < 3; i++) {
+							if (res.length > i) {
+								items.push({
+									path: "@@Diary" + (i + 1) + ";file://index.html?chindex=" + i,
+									title: res[i][1],
+									subTitle: "Diary of activities",
+									isVisible: true
+								});
+							}
+							else {
+								items.push({
+									path: "@@Diary" + (i + 1) + ";file://index.html?chindex=" + i,
+									isVisible: false
+								});
+							}
+						}
+ 						MobileCRM.UI.HomeForm.updateHomeItems(items);
+					}, MobileCRM.bridge.alert);
+			}
+			finally {
+				MobileCRM.UI.HomeForm.hideUIReplacement();
+			}
+		}
+
+		MobileCRM.bridge.onGlobalEvent("ConfigChanged", function (args) {
+			updateHomeItems();
+		}, true);
+
+		updateHomeItems();
+	</script>
+Loading...
+</body>
+</html>

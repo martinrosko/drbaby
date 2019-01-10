@@ -23,7 +23,18 @@
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="HomeReplacement.html" />
+    <Content Include="Images\Diaper.png" />
+    <Content Include="Images\Diary.png" />
+    <Content Include="Images\Feeding.png" />
+    <Content Include="Images\loading.gif" />
+    <Content Include="Images\loading_small.gif" />
     <Content Include="Images\Medicament.png" />
+    <Content Include="Images\Note.png" />
+    <Content Include="Images\Pee.png" />
+    <Content Include="Images\Poop.png" />
+    <Content Include="Images\Sleep.png" />
+    <Content Include="Images\Statistics.png" />
     <Content Include="index-release.html" />
     <Content Include="Publish\publish-mcrm.js" />
     <Content Include="Styles\application.css" />
@@ -41,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Model\activity.ts" />
+    <TypeScriptCompile Include="Model\child.ts" />
     <TypeScriptCompile Include="Model\event.ts" />
     <TypeScriptCompile Include="Model\note.ts" />
     <TypeScriptCompile Include="Model\diaper.ts" />
@@ -87,7 +99,7 @@
     <TypeScriptCompile Include="Resco\event.ts" />
     <TypeScriptCompile Include="Resco\exception.ts" />
     <TypeScriptCompile Include="Resco\logger.ts" />
-    <TypeScriptCompile Include="UI\Feeding\feedingPage.ts" />
+    <TypeScriptCompile Include="UI\Stats\statsPage.ts" />
     <TypeScriptCompile Include="UI\Main\activityView.ts" />
     <TypeScriptCompile Include="UI\Main\eventView.ts" />
     <TypeScriptCompile Include="UI\Main\diaperView.ts" />
@@ -95,7 +107,6 @@
     <TypeScriptCompile Include="UI\Main\feedingView.ts" />
     <TypeScriptCompile Include="UI\Main\sleepView.ts" />
     <TypeScriptCompile Include="UI\Note\notePage.ts" />
-    <TypeScriptCompile Include="UI\Sleep\sleepPage.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Publish\generateMinimizeBat.js" />

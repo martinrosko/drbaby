@@ -13,13 +13,13 @@
 		public actualTime: KnockoutObservable<string>;
 		public timeLine: TimeLine;
 		public selectedActivity: KnockoutObservable<ActivityView>;
-		public daysSinceBirth: number;
+
+		public loadingMore: KnockoutObservable<boolean>;
+		public bShowHeader: boolean;
 
 		public constructor(appForm: AppForm) {
 			super(appForm);
 			this.templateName = "tmplMainPage";
-
-			this.daysSinceBirth = moment().diff(moment(new Date(2018, 7, 25)), "days") + 1;
 
 			this.actualTime = ko.observable<string>(moment(Application.now()).format("HH:mm"));
 
@@ -83,6 +83,9 @@
 
 			this.timeLine = new TimeLine(this, mmtFrom, mmtNow);
 			this.selectedActivity = ko.observable<ActivityView>();
+
+			this.loadingMore = ko.observable<boolean>(false);
+			this.bShowHeader = ENVIRONMENT !== EnvironmentType.MobileCrm;
 		}
 
 		private _getLastActivityDiff(now: number, activity: Model.Activity): string {
@@ -96,38 +99,59 @@
 		private m_bIsLoaded: boolean;
 		public async load(): Promise<void> {
 			if (!this.m_bIsLoaded) {
-				var service = Data.WebService.ServiceFactory.instance.connect();
+				var dlgWait = Resco.Controls.PleaseWaitDialog.show("Loading...", AppForm.instance);
+				try {
+					var service = Data.WebService.ServiceFactory.instance.connect();
 
-				var lastSleeps = await service.loadSleeps(1);
-				if (lastSleeps.length > 0) {
-					this.lastSleep(lastSleeps[0]);
-					if (!lastSleeps[0].startedOn() || !lastSleeps[0].endedOn())	// maybe just the lulling started
-						this.activeSleep(lastSleeps[0]);					
+					var lastSleeps = await service.loadSleeps(1);
+					if (lastSleeps.length > 0) {
+						this.lastSleep(lastSleeps[0]);
+						if (!lastSleeps[0].startedOn() || !lastSleeps[0].endedOn())	// maybe just the lulling started
+							this.activeSleep(lastSleeps[0]);
+					}
+
+					var lastFeedings = await service.loadFeedings(1);
+					if (lastFeedings.length > 0) {
+						this.lastFeeding(lastFeedings[0]);
+						if (!lastFeedings[0].endedOn())
+							this.activeFeeding(lastFeedings[0]);
+					}
+
+					var activities = await service.loadActivitiesBetween(this.timeLine.mmtFrom.toDate(), new Date());
+					this.timeLine.addActivites(activities);
+
 				}
-
-				var lastFeedings = await service.loadFeedings(1);
-				if (lastFeedings.length > 0) {
-					this.lastFeeding(lastFeedings[0]);
-					if (!lastFeedings[0].endedOn())
-						this.activeFeeding(lastFeedings[0]);					
+				catch (ex) {
+					this.sayError("Loading Failed", Resco.Exception.convert(ex))
 				}
-
-				var activities = await service.loadActivitiesBetween(this.timeLine.mmtFrom.toDate(), new Date());
-				this.timeLine.addActivites(activities);
-
-				this.m_bIsLoaded = true;
+				finally {
+					this.m_bIsLoaded = true;
+					dlgWait.close();
+				}
 			}
 		}
 
 		public async loadMore(): Promise<void> {
-			var prevFrom = this.timeLine.mmtFrom.toDate();
-			var mmtFrom = moment(this.timeLine.mmtFrom).subtract("day", 1);
+			if (this.loadingMore())
+				return;
 
-			var service = Data.WebService.ServiceFactory.instance.connect();
-			var activities = await service.loadActivitiesBetween(mmtFrom.toDate(), prevFrom);
+			try {
+				this.loadingMore(true);
+				var prevFrom = this.timeLine.mmtFrom.toDate();
+				var mmtFrom = moment(this.timeLine.mmtFrom).subtract("day", 1);
 
-			this.timeLine.setRange(mmtFrom, this.timeLine.mmtTo);
-			this.timeLine.addActivites(activities);
+				var service = Data.WebService.ServiceFactory.instance.connect();
+				var activities = await service.loadActivitiesBetween(mmtFrom.toDate(), prevFrom);
+
+				this.timeLine.setRange(mmtFrom, this.timeLine.mmtTo);
+				this.timeLine.addActivites(activities);
+			}
+			catch (ex) {
+				this.sayError("Loading Failed", Resco.Exception.convert(ex))
+			}
+			finally {
+				this.loadingMore(false);
+			}
 		}
 
 		public async addEvent(): Promise<void> {
@@ -200,7 +224,7 @@
 					this.timeLine.addActivity(activeSleep);
 					this.activeSleep(undefined);
 				});
-			}, this, "Place", false, "Cancel", ["Cot", "Scarf", "Carrier", "Stroller", "Couch", "Bed", "rms", "Car", "Other"]);
+			}, this, "Place", false, "Cancel", ["Cot", "Scarf", "Carrier", "Stroller", "Couch", "Bed", "Arms", "Car", "Other"]);
 		}
 
 		public async fallAsleep(when: Date): Promise<void> {
@@ -418,9 +442,11 @@
 
 	//style=\"background: #d3ffd6\" 
 
-	Resco.Controls.KOEngine.instance.addTemplate("tmplMainPage", "<div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #4e5c6d; color: white; font-weight: bold\">\
-		<span>Dominik - <span data-bind=\"text: daysSinceBirth\" />.den</span><br />\
+	Resco.Controls.KOEngine.instance.addTemplate("tmplMainPage", "<div style=\"background: #8db7ce\">\
+	<!-- ko if: bShowHeader --><div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #4e5c6d; color: white; font-weight: bold\">\
+		<span data-bind=\"text: DrBaby.Application.child.name\" /> - <span data-bind=\"text: DrBaby.Application.child.daysSinceBirth\" />.den<br />\
 	</div>\
+	<!-- /ko -->\
 	<div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #e8f7f9\">\
 	<span data-bind=\"text: actualTime, css: {clockBig: !activeFeeding() && !activeSleep(), clockMedium: activeFeeding() || activeSleep()}\" />\
 	</div>\
@@ -515,6 +541,12 @@
 		</div>\
 	<!-- /ko -->\
 	<div style=\"box-sizing: border-box; border-bottom: solid 1px black; border-top: solid 1px black; width: 100%; height: 40px; text-align: center; font-size: 14px; padding: 10px; background: #eeeeee\" data-bind=\"click: loadMore\">\
-		<span>Load more...</span>\
-	</div>");
+		<!-- ko if: !loadingMore() -->\
+		<span>Load more</span>\
+		<!-- /ko -->\
+		<!-- ko if: loadingMore() -->\
+		<img src=\"Images/loading_small.gif\" /> <span>Loading...</span>\
+		<!-- /ko -->\
+	</div>\
+</div>");
 }

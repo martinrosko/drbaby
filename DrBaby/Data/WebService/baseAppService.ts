@@ -3,10 +3,24 @@
 	export class BaseAppService implements IAppService {
 		protected m_service: Resco.Data.WebService.ICrmService;
 
+		public async loadChild(index: number): Promise<Model.Child> {
+			var fetch = "<fetch version=\"1.0\"><entity name=\"child\"><all-attributes />\
+<order attribute=\"birthday\" descending=\"false\" />\
+<filter type=\"or\"><condition attribute=\"ownerid\" operator=\"eq-userid\" />\
+</filter></entity></fetch>";
+
+			var serverEntities = await this.m_service.executeFetch(fetch);
+			if (serverEntities.length > index)
+				return this._getChildFromServerEntity(serverEntities[index]);
+			return null;
+		}
+
 		public async loadSleeps(lastX: number): Promise<Model.Sleep[]> {
 			var ctx = new Resco.Data.WebService.FetchRequestParams();
 			ctx.maxCount = lastX;
-			var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"sleep\"><all-attributes /><order attribute=\"scheduledstart\" descending=\"true\" /><filter type=\"or\"></filter></entity></fetch>", ctx);
+			var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"sleep\"><all-attributes /><order attribute=\"scheduledstart\" descending=\"true\" />\
+<filter type=\"or\"><condition attribute=\"child\" operator=\"eq\" value=\"" + Application.child.id.Value + "\" /></filter>\
+</entity></fetch>", ctx);
 			var result = serverEntities.slice(0, lastX).map(se => this._getSleepFromServerEntity(se));
 			return result;
 		}
@@ -15,6 +29,8 @@
 			var entity = this.m_service.createWritableEntity("sleep");
 			if (sleep.id)//!questionnaire.isNew) 
 				entity.addTypeValue("id", Resco.Data.WebService.CrmType.PrimaryKey, sleep.id.Value);
+			else
+				entity.addTypeValue("child", Resco.Data.WebService.CrmType.Lookup, new Resco.Data.WebService.EntityReference("child", Application.child.id));
 
 			entity.addTypeValue("scheduledstart", Resco.Data.WebService.CrmType.DateTime, sleep.lullingStartedOn());
 			entity.addTypeValue("actualstart", Resco.Data.WebService.CrmType.DateTime, sleep.startedOn());
@@ -37,7 +53,9 @@
 		public async loadFeedings(lastX: number): Promise<Model.Feeding[]> {
 			var ctx = new Resco.Data.WebService.FetchRequestParams();
 			ctx.maxCount = lastX;
-			var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"feeding\"><all-attributes /><order attribute=\"actualstart\" descending=\"true\" /><filter type=\"or\"></filter></entity></fetch>", ctx);
+			var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"feeding\"><all-attributes /><order attribute=\"actualstart\" descending=\"true\" />\
+<filter type=\"or\"><condition attribute=\"child\" operator=\"eq\" value=\"" + Application.child.id.Value + "\" /></filter>\
+</entity></fetch>", ctx);
 
 			var result = serverEntities.slice(0, lastX).map(se => this._getFeedingFromServerEntity(se));
 			for (var feeding of result)
@@ -50,6 +68,8 @@
 			var entity = this.m_service.createWritableEntity("feeding");
 			if (feeding.id)//!questionnaire.isNew) 
 				entity.addTypeValue("id", Resco.Data.WebService.CrmType.PrimaryKey, feeding.id.Value);
+			else
+				entity.addTypeValue("child", Resco.Data.WebService.CrmType.Lookup, new Resco.Data.WebService.EntityReference("child", Application.child.id));
 
 			entity.addTypeValue("actualstart", Resco.Data.WebService.CrmType.DateTime, feeding.startedOn());
 			entity.addTypeValue("actualend", Resco.Data.WebService.CrmType.DateTime, feeding.endedOn());
@@ -67,7 +87,9 @@
 		}
 
 		public async loadDiapers(lastX: number): Promise<Model.Diaper[]> {
-			var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"diaper\"><all-attributes /><order attribute=\"actualstart\" descending=\"true\" /><filter type=\"or\"></filter></entity></fetch>");
+			var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"diaper\"><all-attributes /><order attribute=\"actualstart\" descending=\"true\" />\
+<filter type=\"or\"><condition attribute=\"child\" operator=\"eq\" value=\"" + Application.child.id.Value + "\" /></filter>\
+</entity></fetch>");
 			var result = serverEntities.map(se => this._getDiaperFromServerEntity(se)).slice(0, lastX);
 			return result;
 		}
@@ -76,6 +98,8 @@
 			var entity = this.m_service.createWritableEntity("diaper");
 			if (diaper.id)
 				entity.addTypeValue("id", Resco.Data.WebService.CrmType.PrimaryKey, diaper.id.Value);
+			else
+				entity.addTypeValue("child", Resco.Data.WebService.CrmType.Lookup, new Resco.Data.WebService.EntityReference("child", Application.child.id));
 
 			entity.addTypeValue("actualstart", Resco.Data.WebService.CrmType.DateTime, diaper.startedOn());
 			entity.addTypeValue("actualend", Resco.Data.WebService.CrmType.DateTime, diaper.startedOn());
@@ -98,6 +122,8 @@
 			var entity = this.m_service.createWritableEntity("task");
 			if (event.id)
 				entity.addTypeValue("id", Resco.Data.WebService.CrmType.PrimaryKey, event.id.Value);
+			else
+				entity.addTypeValue("child", Resco.Data.WebService.CrmType.Lookup, new Resco.Data.WebService.EntityReference("child", Application.child.id));
 
 			entity.addTypeValue("actualstart", Resco.Data.WebService.CrmType.DateTime, event.startedOn());
 			entity.addTypeValue("actualend", Resco.Data.WebService.CrmType.DateTime, event.startedOn());
@@ -184,16 +210,20 @@
 	<attribute name=\"documentbody\" />\
 </link-entity>\
 <order attribute=\"actualstart\" />\
-<filter type=\"or\">\
-	<filter type=\"and\">\
-		<condition attribute=\"actualstart\" operator=\"on-or-after\" value=\"" + fromDate.toISOString() + "\" />\
-		<condition attribute=\"actualstart\" operator=\"on-or-before\" value=\"" + toDate.toISOString() + "\" />\
+<filter type=\"and\">\
+	<filter type=\"or\">\
+		<filter type=\"and\">\
+			<condition attribute=\"actualstart\" operator=\"ge\" value=\"" + fromDate.toISOString() + "\" />\
+			<condition attribute=\"actualstart\" operator=\"le\" value=\"" + toDate.toISOString() + "\" />\
+		</filter>\
+		<filter type=\"and\">\
+			<condition attribute=\"actualend\" operator=\"ge\" value=\"" + fromDate.toISOString() + "\" />\
+			<condition attribute=\"actualend\" operator=\"le\" value=\"" + toDate.toISOString() + "\" />\
+		</filter>\
 	</filter>\
-	<filter type=\"and\">\
-		<condition attribute=\"actualend\" operator=\"on-or-after\" value=\"" + fromDate.toISOString() + "\" />\
-		<condition attribute=\"actualend\" operator=\"on-or-before\" value=\"" + toDate.toISOString() + "\" />\
-	</filter>\
-</filter></entity></fetch>");
+	<condition attribute=\"child\" operator=\"eq\" value=\"" + Application.child.id.Value + "\" />\
+</filter>\
+</entity></fetch>");
 		}
 
 		public async deleteActivity(activity: Model.Activity): Promise<boolean> {
@@ -244,7 +274,9 @@
 		<attribute name=\"amount\" />\
 		<attribute name=\"medicament\" />\
 		<attribute name=\"unit\" />\
-	<filter type=\"and\"></filter>\
+	<filter type=\"and\">\
+		<condition attribute=\"ownerid\" operator=\"eq-userid\" />\
+	</filter>\
 </entity></fetch>");
 			return serverEntities.map(se => this._getDoseFromServerEntity(se));
 		}
@@ -350,7 +382,7 @@
 
 			return result;
 		}
-
+		
 		private _getEventFromServerEntity(serverEntity: Resco.Data.WebService.ServerEntity): Model.Event {
 			var result = new Model.Event();
 			var actualStart = <Resco.Data.DateTime>serverEntity.attributes["actualstart"];
@@ -363,6 +395,20 @@
 			var note = this._getAnnotationFromServerEntity(serverEntity);
 			if (note)
 				result.addNote(note);
+
+			return result;
+		}
+
+		private _getChildFromServerEntity(serverEntity: Resco.Data.WebService.ServerEntity): Model.Child {
+			var result = new Model.Child();
+			var birthday = <Resco.Data.DateTime>serverEntity.attributes["birthday"];
+			if (birthday)
+				result.birth = birthday.Value;
+			result.id = serverEntity.attributes["id"];
+			result.name = serverEntity.attributes["name"];
+			var sex = (<Resco.Data.WebService.OptionSetValue>serverEntity.attributes["sex"]);
+			if (sex)
+				result.sex = sex.Value;
 
 			return result;
 		}
