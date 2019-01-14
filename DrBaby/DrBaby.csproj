@@ -99,6 +99,7 @@
     <TypeScriptCompile Include="Resco\event.ts" />
     <TypeScriptCompile Include="Resco\exception.ts" />
     <TypeScriptCompile Include="Resco\logger.ts" />
+    <TypeScriptCompile Include="UI\Main\medicineView.ts" />
     <TypeScriptCompile Include="UI\Stats\statsPage.ts" />
     <TypeScriptCompile Include="UI\Main\activityView.ts" />
     <TypeScriptCompile Include="UI\Main\eventView.ts" />

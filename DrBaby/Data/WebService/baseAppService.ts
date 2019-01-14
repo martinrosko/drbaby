@@ -112,10 +112,31 @@
 				if (result instanceof Resco.Data.Guid)
 					diaper.id = result;
 				else
-					throw new Resco.Exception("Unable to create diaper record");
+					throw new Resco.Exception("Unable to create event record");
 			}
 			if (diaper.note())
 				await this.saveNote(diaper.note());
+		}
+
+		public async saveMedicine(medicine: Model.Medicine): Promise<void> {
+			var entity = this.m_service.createWritableEntity(medicine.entityName);
+			if (medicine.id)
+				entity.addTypeValue("id", Resco.Data.WebService.CrmType.PrimaryKey, medicine.id.Value);
+			else
+				entity.addTypeValue("child", Resco.Data.WebService.CrmType.Lookup, new Resco.Data.WebService.EntityReference("child", Application.child.id));
+
+			entity.addTypeValue("actualstart", Resco.Data.WebService.CrmType.DateTime, medicine.startedOn());
+			entity.addTypeValue("actualend", Resco.Data.WebService.CrmType.DateTime, medicine.startedOn());
+
+			var result = await this.m_service.executeRequest(medicine.id ? this.m_service.buildUpdateRequest(entity) : this.m_service.buildCreateRequest(entity));
+			if (!medicine.id) {
+				if (result instanceof Resco.Data.Guid)
+					medicine.id = result;
+				else
+					throw new Resco.Exception("Unable to create medicine record");
+			}
+			if (medicine.note())
+				await this.saveNote(medicine.note());
 		}
 
 		public async saveEvent(event: Model.Event): Promise<void> {
@@ -179,6 +200,18 @@
 				result.push(this._getDiaperFromServerEntity(serverEntity));
 			}
 
+			var serverEntities = await this._getDayAcitivites("medicine", fromDate, toDate, "<link-entity name=\"dose\" from=\"id\" to=\"dose\" link-type=\"inner\" alias=\"dose\">\
+		<attribute name=\"id\" />\
+		<attribute name=\"name\" />\
+		<attribute name=\"amount\" />\
+		<attribute name=\"medicament\" />\
+		<attribute name=\"unit\" />\
+</link-entity>");
+			serverEntities = this._linearizeResults(serverEntities);
+			for (var serverEntity of serverEntities) {
+				result.push(this._getMedicineFromServerEntity(serverEntity));
+			}
+
 			var serverEntities = await this._getDayAcitivites("task", fromDate, toDate);
 			serverEntities = this._linearizeResults(serverEntities);
 			for (var serverEntity of serverEntities) {
@@ -202,14 +235,18 @@
 			return result;
 		}
 
-		private async _getDayAcitivites(actName: string, fromDate: Date, toDate: Date): Promise<Resco.Data.WebService.ServerEntity[]> {
-			return await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"" + actName + "\"><all-attributes />\
+		private async _getDayAcitivites(actName: string, fromDate: Date, toDate: Date, moreLinks?: string): Promise<Resco.Data.WebService.ServerEntity[]> {
+			var fetch = "<fetch version=\"1.0\"><entity name=\"" + actName + "\"><all-attributes />\
 <link-entity name=\"annotation\" from=\"objectid\" to=\"id\" link-type=\"outer\" alias=\"note\">\
 	<attribute name=\"id\" />\
 	<attribute name=\"subject\" />\
 	<attribute name=\"documentbody\" />\
-</link-entity>\
-<order attribute=\"actualstart\" />\
+</link-entity>";
+
+			if (moreLinks)
+				fetch += moreLinks;
+
+			fetch += "<order attribute=\"actualstart\" />\
 <filter type=\"and\">\
 	<filter type=\"or\">\
 		<filter type=\"and\">\
@@ -223,7 +260,9 @@
 	</filter>\
 	<condition attribute=\"child\" operator=\"eq\" value=\"" + Application.child.id.Value + "\" />\
 </filter>\
-</entity></fetch>");
+</entity></fetch>";
+
+			return await this.m_service.executeFetch(fetch);
 		}
 
 		public async deleteActivity(activity: Model.Activity): Promise<boolean> {
@@ -375,6 +414,26 @@
 			var amount = (<Resco.Data.WebService.OptionSetValue>serverEntity.attributes["amount"]);
 			if (amount)
 				result.amount(amount.Value);
+
+			var note = this._getAnnotationFromServerEntity(serverEntity);
+			if (note)
+				result.addNote(note);
+
+			return result;
+		}
+
+		private _getMedicineFromServerEntity(serverEntity: Resco.Data.WebService.ServerEntity): Model.Medicine {
+			var result = new Model.Medicine();
+			var actualStart = <Resco.Data.DateTime>serverEntity.attributes["actualstart"];
+			if (actualStart)
+				result.startedOn(actualStart.Value);
+			var actualEnd = <Resco.Data.DateTime>serverEntity.attributes["actualend"];
+			if (actualEnd)
+				result.endedOn(actualEnd.Value);
+			result.id = serverEntity.attributes["id"];
+			var dose = this._getDoseFromServerEntity(serverEntity, "dose.");
+			if (dose)
+				result.dose(dose);
 
 			var note = this._getAnnotationFromServerEntity(serverEntity);
 			if (note)

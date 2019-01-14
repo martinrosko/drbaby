@@ -7,6 +7,7 @@
 		saveFeeding: (feeding: Model.Feeding) => Promise<void>;
 		saveDiaper: (diaper: Model.Diaper) => Promise<void>;
 		loadDiapers: (lastX: number) => Promise<Model.Diaper[]>;
+		saveMedicine: (medicine: Model.Medicine) => Promise<void>;
 		saveEvent: (diaper: Model.Event) => Promise<void>;
 		loadActivitiesBetween: (startDate: Date, endDate: Date) => Promise<Model.Activity[]>;
 		deleteActivity: (activity: Model.Activity) => Promise<boolean>;

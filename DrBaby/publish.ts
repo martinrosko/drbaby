@@ -9,6 +9,6 @@
 
 	export var DEBUG_XRM_URL = "https://dev.rescocrm.com";
 	export var DEBUG_XRM_ORGANIZATION = "drbaby";//
-	export var DEBUG_XRM_USERNAME = "gl@resco.net";//
+	export var DEBUG_XRM_USERNAME = "rohel@resco.net";//
 	export var DEBUG_XRM_PASSWORD = "Resco@777";//
 }

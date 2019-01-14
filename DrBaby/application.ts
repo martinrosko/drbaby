@@ -98,7 +98,7 @@
 
 				var page: UI.BasePage;
 				if (initPage.startsWith("stats"))
-					page = new UI.StatsPage(UI.AppForm.instance);
+					page = new UI.StatsPage(UI.AppForm.instance, new Date());
 				else
 					page = new UI.MainPage(UI.AppForm.instance);
 

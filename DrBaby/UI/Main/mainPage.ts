@@ -161,10 +161,13 @@
 				if (index < 2) {
 					this._addDiaper(startedOn, index === 0);
 				}
-				if (index === 2) {
+				else if (index === 2) {
+					this._addMedicine(startedOn);
+				}
+				else if (index === 3) {
 					this._addNote(startedOn);
 				}
-			}, this, "Event", false, "Cancel", ["Poop", "Pee", "Note"]);
+			}, this, "Event", false, "Cancel", ["Poop", "Pee", "Medicine", "Note"]);
 		}
 
 		private async _addDiaper(startedOn: Date, isPoo: boolean): Promise<void> {
@@ -180,6 +183,19 @@
 					this.timeLine.addActivity(diaper);
 				});
 			}, this, "Amount", false, "Cancel", ["Small", "Normal", "Huge", "King"]);
+		}
+
+		private async _addMedicine(when: Date): Promise<void> {
+			var service = Data.WebService.ServiceFactory.instance.connect();
+			var doses = await service.loadDoses();
+
+			this.messageBox(index => {
+				var medicine = new Model.Medicine();
+				medicine.startedOn(when);
+				medicine.endedOn(when);
+				medicine.dose(doses[index]);
+				service.saveMedicine(medicine);
+			}, this, "Medicament", false, "Cancel", doses.map(d => d.name()));
 		}
 
 		private async _addNote(when: Date): Promise<void> {
@@ -417,6 +433,8 @@
 				activityView = new FeedingView(this, activity);
 			else if (activity instanceof Model.Diaper)
 				activityView = new DiaperView(this, activity);
+			else if (activity instanceof Model.Medicine)
+				activityView = new MedicineView(this, activity);
 			else if (activity instanceof Model.Event)
 				activityView = new EventView(this, activity);
 			else

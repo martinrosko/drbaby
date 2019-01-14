@@ -14,6 +14,20 @@
 		}
 	}
 
+	export class Medicine extends Activity {
+		public dose: KnockoutObservable<Dose>;
+
+		public constructor() {
+			super();
+			this.entityName = "medicine";
+			this.dose = ko.observable<Dose>();
+		}
+
+		protected async _saveInternal(service: Data.WebService.IAppService): Promise<void> {
+			await service.saveMedicine(this);
+		}
+	}
+
 	export enum DoseUnit {
 		Pill = 10000,
 		Droplet = 10001

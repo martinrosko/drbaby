@@ -68,6 +68,9 @@
 						else if (mp.type == 13 /*uniqueidentifier*/ || key == me.primaryKeyName) {
 							val = new Guid(val);
 						}
+						else if (mp.type === CrmType.Boolean) {
+							val = (val === "True" || val === "true" || val === true || val === 1 || val === "1");
+						}
 					}
 					else {
 						if ((mp.type == CrmType.Picklist || mp.type == CrmType.State || mp.type == CrmType.Status)) {
