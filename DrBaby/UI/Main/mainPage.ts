@@ -284,14 +284,31 @@
 			return fellAsleepMmnt.format("hh:mm") + " - " + (Model.Breast[feeding.breast()]) + " " + duration + " minut"; //this._getDurationLabel(duration);
 		}
 
-		public async finishActiveFeeding(): Promise<void> {
-			var activeFeeding = this.activeFeeding();
-			activeFeeding.endedOn(new Date());
+        public async finishActiveFeeding(): Promise<void> {
+            var endedOn = new Date();
+            var activeFeeding = this.activeFeeding();
 
-			await activeFeeding.save();
-			this.lastFeeding(activeFeeding);
-			this.timeLine.addActivity(activeFeeding);
-			this.activeFeeding(undefined);
+            var breast = activeFeeding.breast();
+            var cancelLabel = breast === Model.Breast.Left ? "Left" : "Right";
+            var firstLabel = breast === Model.Breast.Left ? "Right" : "Left";
+
+            this.messageBox(index => {
+                if (index === 0)
+                    activeFeeding.breast(breast === Model.Breast.Left ? Model.Breast.Right : Model.Breast.Left)
+                else if (index === 1)
+                    activeFeeding.breast(Model.Breast.Both);
+                else if (index === 2)
+                    activeFeeding.breast(Model.Breast.None);
+                
+                activeFeeding.endedOn(endedOn);
+
+                activeFeeding.save().then(v => {
+                    this.lastFeeding(activeFeeding);
+                    this.timeLine.addActivity(activeFeeding);
+                    this.activeFeeding(undefined);
+                })
+            }, this, "Fed from", false, cancelLabel, [firstLabel, "Both", "Just Meal"], true, 5);
+            
 		}
 
 		public async cancelActiveFeeding(): Promise<void> {

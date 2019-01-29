@@ -22,12 +22,12 @@
 		}
 	}
 
-	Resco.Controls.KOEngine.instance.addTemplate("tmplDiaperView", "<img style=\"width: 24px; position: relative; top: -3px; left: -3px\" data-bind=\"attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}\" />");
+	Resco.Controls.KOEngine.instance.addTemplate("tmplDiaperView", "<img style=\"width: 15px\" data-bind=\"attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}\" />");
 
-	Resco.Controls.KOEngine.instance.addTemplate("tmplDiaperViewSelected", "<img style=\"width: 24px; position: relative; top: -3px; left: -3px; display: inline-block\" data-bind=\"attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}\" /> <span style=\"font-size: 10px; font-weight: bold\" data-bind=\"text: DrBaby.Model.DiaperAmount[activity.amount()]\" /><br />\
+	Resco.Controls.KOEngine.instance.addTemplate("tmplDiaperViewSelected", "<img style=\"width: 15px\" data-bind=\"attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}\" /> <span style=\"font-size: 10px; font-weight: bold\" data-bind=\"text: DrBaby.Model.DiaperAmount[activity.amount()]\" /><br />\
 	<span style=\"font-size: 10px\" data-bind=\"text: moment(activity.startedOn()).format('HH:mm')\" />");
 
-	Resco.Controls.KOEngine.instance.addTemplate("tmplDiaperViewWide", "<img style=\"width: 24px; position: relative; top: -3px; left: -3px; display: inline-block\" data-bind=\"attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}\" />\
+	Resco.Controls.KOEngine.instance.addTemplate("tmplDiaperViewWide", "<img style=\"width: 15px\" data-bind=\"attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}\" /> \
 <span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.DiaperAmount[activity.amount()]\" /> \
 <span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ')'\" />");
 }

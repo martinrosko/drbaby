@@ -58,8 +58,10 @@
 </entity></fetch>", ctx);
 
 			var result = serverEntities.slice(0, lastX).map(se => this._getFeedingFromServerEntity(se));
-			for (var feeding of result)
-				this._loadFeedingDoses(feeding);
+            for (var feeding of result) {
+                this._loadMeals(feeding);
+                this._loadFeedingDoses(feeding);
+            }
 
 			return result;
 		}
@@ -189,7 +191,8 @@
 			serverEntities = await this._getDayAcitivites("feeding", fromDate, toDate);
 			serverEntities = this._linearizeResults(serverEntities);
 			for (var serverEntity of serverEntities) {
-				var feeding = this._getFeedingFromServerEntity(serverEntity);
+                var feeding = this._getFeedingFromServerEntity(serverEntity);
+                this._loadMeals(feeding);
 				this._loadFeedingDoses(feeding);
 				result.push(feeding);
 			}
@@ -276,6 +279,19 @@
 			return await this.m_service.delete("annotation", id.Value);
 		}
 
+        private async _loadMeals(feeding: Model.Feeding): Promise<void> {
+            var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"feeding_meal\">\
+	<all-attributes />\
+	<link-entity name=\"meal\" from=\"id\" to=\"mealid\" alias=\"meal\">\
+		<attribute name=\"id\" />\
+		<attribute name=\"name\" />\
+	</link-entity>\
+	<filter type=\"and\"><condition attribute=\"feedingid\" operator=\"eq\" value=\"" + feeding.id.Value + "\" /></filter>\
+</entity></fetch>");
+            var meals = serverEntities.map(se => this._getMealFromServerEntity(se, "meal."));
+            feeding.meals(meals);
+        }
+
 		private async _loadFeedingDoses(feeding: Model.Feeding): Promise<void> {
 			var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"pre_feeding_dose\">\
 	<all-attributes />\
@@ -306,6 +322,21 @@
 			feeding.postDoses(doses);
 		}
 
+        public async loadMeals(): Promise<Model.Meal[]> {
+            var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"meal\">\
+		<attribute name=\"id\" />\
+		<attribute name=\"name\" />\
+	<filter type=\"and\">\
+		<condition attribute=\"ownerid\" operator=\"eq-userid\" />\
+	</filter>\
+</entity></fetch>");
+            return serverEntities.map(se => this._getMealFromServerEntity(se));
+        }
+
+        public async addFeedingMeal(feedingId: Resco.Data.Guid, mealId: Resco.Data.Guid): Promise<void> {
+            await this.m_service.updateManyToManyReference("feeding_meal", "", true, "feedingid", feedingId.Value, "feeding", "mealid", mealId.Value, "meal");
+        }
+
 		public async loadDoses(): Promise<Model.Dose[]> {
 			var serverEntities = await this.m_service.executeFetch("<fetch version=\"1.0\"><entity name=\"dose\">\
 		<attribute name=\"id\" />\
@@ -321,10 +352,6 @@
 		}
 
 		public async addFeedingDose(feedingId: Resco.Data.Guid, doseId: Resco.Data.Guid, pre: boolean): Promise<void> {
-			var entity = this.m_service.createWritableEntity(pre ? "pre_feeding_dose" : "post_feeding_dose");
-			entity.addTypeValue("feeding", Resco.Data.WebService.CrmType.Lookup, new Resco.Data.WebService.EntityReference("feeding", feedingId));
-			entity.addTypeValue("dose", Resco.Data.WebService.CrmType.Lookup, new Resco.Data.WebService.EntityReference("dose", doseId));
-
 			await this.m_service.updateManyToManyReference(pre ? "pre_feeding_dose" : "post_feeding_dose", "", true, "feeding", feedingId.Value, "feeding", "dose", doseId.Value, "dose");
 		}
 
@@ -382,7 +409,14 @@
 				result.addNote(note);
 
 			return result;
-		}
+        }
+
+        private _getMealFromServerEntity(serverEntity: Resco.Data.WebService.ServerEntity, alias: string = ""): Model.Meal {
+            var result = new Model.Meal();
+            result.id = serverEntity.attributes[alias + "id"];
+            result.name(serverEntity.attributes[alias + "name"]);
+            return result;
+        }
 
 		private _getDoseFromServerEntity(serverEntity: Resco.Data.WebService.ServerEntity, alias: string = ""): Model.Dose {
 			var result = new Model.Dose();

@@ -6,32 +6,53 @@
 		<div class=\"button\" data-bind=\"text: $data, click: $parent.buttonClick.bind($parent, $index()), style: { color: Resco.Controls.MessageBox.ButtonColor }\" />\
 	<!-- /ko -->\
 	<!-- ko if: defaultButton -->\
-		<div class=\"button default\" data-bind=\"text: defaultButton, click: buttonClick.bind($data, -1), style: { color: Resco.Controls.MessageBox.ButtonColor }\" />\
+		<div class=\"button default\" data-bind=\"text: defaultButtonLabel, click: buttonClick.bind($data, -1), style: { color: Resco.Controls.MessageBox.ButtonColor }\" />\
 	<!-- /ko -->\
 </div>");
 
-	export class MessageBox extends Dialog {
+    export class MessageBox extends Dialog {
+        public timeOut: KnockoutObservable<number>;
         public text: KnockoutObservable<string>;
         public buttons: Array<KnockoutObservable<string>>;
         public defaultButton: KnockoutObservable<string>;
+        public defaultButtonLabel: KnockoutComputed<string>;
 
         public buttonColor: string;
 
         private m_callback: (index: number) => void;
 		private m_callbackOwner: any;
-		private m_bHandleCancel: boolean;
+        private m_bHandleCancel: boolean;
+        private m_intervalHandle: number;
 
         static buttonColor: string;
 
-        constructor(parent: IAppForm) {
+        constructor(parent: IAppForm, timeOut: number = -1) {
             super(parent);
             this.content = this;
 			this.contentTemplateName = "tmplRescoMessageBox";
             this.bounds.width(300);
 
             this.text = ko.observable("");
+            this.timeOut = ko.observable<number>(timeOut);
             this.buttons = new Array<KnockoutObservable<string>>();
             this.defaultButton = ko.observable("");
+
+            this.defaultButtonLabel = ko.computed(() => {
+                var timeOut = this.timeOut();
+                var label = this.defaultButton();
+
+                if (timeOut >= 0)
+                    return label + " (" + timeOut + ")";
+                return label;
+            }, this);
+
+            if (timeOut > 0) {
+                this.m_intervalHandle = window.setInterval(_ => {
+                    this.timeOut(this.timeOut() - 1);
+                    if (this.timeOut() === 0)
+                        this.buttonClick(-1);
+                }, 1000);
+            }
 
 			this.m_bHandleCancel = false;
         }
@@ -41,6 +62,14 @@
             if (this.m_callback && (this.m_bHandleCancel || index >= 0)) {
                 this.m_callback.call(this.m_callbackOwner ? this.m_callbackOwner : this, index);
             }
+        }
+
+        public close(dialogResult: boolean = false) {
+            if (this.m_intervalHandle !== undefined) {
+                window.clearTimeout(this.m_intervalHandle);
+                this.m_intervalHandle = undefined;
+            }
+            super.close();
         }
 
 		public showMessage(callback: (index: number) => void, callbackOwner: any, title: string, multiline: boolean, defaultText: string, buttons: string[], bHandleCancel: boolean = false) {
@@ -61,8 +90,8 @@
 
         static buttonHeight: number = 40;
 
-        static show(parent: IAppForm, callback: (index: number) => void, callbackOwner: any, title: string, multiline: boolean, defaultText: string, buttons: string[], bHandleCancel: boolean = false) {
-            var msgBox = new MessageBox(parent);
+        static show(parent: IAppForm, callback: (index: number) => void, callbackOwner: any, title: string, multiline: boolean, defaultText: string, buttons: string[], bHandleCancel: boolean = false, timeOut: number = -1) {
+            var msgBox = new MessageBox(parent, timeOut);
             msgBox.showMessage(callback, callbackOwner, title, multiline, defaultText, buttons, bHandleCancel);
         }
     }

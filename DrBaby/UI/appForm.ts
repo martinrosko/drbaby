@@ -146,8 +146,8 @@
 			this.dialogs.push(dialog);
 		}
 
-		public messageBox(callback: (index: number) => void, callbackSource: any, title: string, multiline: boolean, defaultText: string, buttons: string[], bHandleCancel: boolean = false) {
-			Resco.Controls.MessageBox.show(this, callback, callbackSource, title, multiline, defaultText, buttons, bHandleCancel);
+        public messageBox(callback: (index: number) => void, callbackSource: any, title: string, multiline: boolean, defaultText: string, buttons: string[], bHandleCancel: boolean = false, timeOut: number = -1) {
+			Resco.Controls.MessageBox.show(this, callback, callbackSource, title, multiline, defaultText, buttons, bHandleCancel, timeOut);
 		}
 
 		public sayText(title: string) {

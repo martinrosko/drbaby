@@ -12,6 +12,26 @@
 			this.lightColor("#DEECE6");
 		}
 
+        protected _getActionMenuButtons(): string[] {
+            return ["Change Place"].concat(super._getActionMenuButtons());
+        }
+
+        protected _handleActionMenu(index: number): void {
+            if (index === 0) {
+                this._changePlace();
+            }
+            else {
+                super._handleActionMenu(index - 3);
+            }
+        }
+
+        private _changePlace(): void {
+            this.parent.page.messageBox(index => {
+                (<Model.Sleep>this.activity).place(index);
+                this.activity.save();
+            }, this, "Breast", false, "Cancel", ["Cot", "Scarf", "Carrier", "Stroller", "Couch", "Bed", "Arms", "Car", "Other"]);
+        }
+
 		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {
 			if (isSelected)
 				return "tmplSleepViewSelected";

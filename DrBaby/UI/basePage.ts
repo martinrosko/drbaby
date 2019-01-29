@@ -54,8 +54,8 @@
 			return true;
 		}
 
-		public messageBox(callback: (index: number) => void, callbackSource: any, title: string, multiline: boolean, defaultText: string, buttons: string[], bHandleCancel: boolean = false) {
-			this.m_parent.messageBox(callback, callbackSource, title, multiline, defaultText, buttons, bHandleCancel);
+		public messageBox(callback: (index: number) => void, callbackSource: any, title: string, multiline: boolean, defaultText: string, buttons: string[], bHandleCancel: boolean = false, timeOut: number = -1) {
+			this.m_parent.messageBox(callback, callbackSource, title, multiline, defaultText, buttons, bHandleCancel, timeOut);
 		}
 
 		public sayText(title: string) {

@@ -13,6 +13,8 @@
 		deleteActivity: (activity: Model.Activity) => Promise<boolean>;
 		saveNote: (note: Model.Note) => Promise<void>;
 		deleteNote: (id: Resco.Data.Guid) => Promise<boolean>;
+        loadMeals: () => Promise<Model.Meal[]>;
+        addFeedingMeal: (feedingId: Resco.Data.Guid, mealId: Resco.Data.Guid) => Promise<void>;
 		loadDoses: () => Promise<Model.Dose[]>;
 		addFeedingDose: (feedingId: Resco.Data.Guid, doseId: Resco.Data.Guid, pre: boolean) => Promise<void>;
 	}

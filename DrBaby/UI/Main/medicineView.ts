@@ -22,12 +22,12 @@
 		}
 	}
 
-	Resco.Controls.KOEngine.instance.addTemplate("tmplMedicineView", "<img src=\"Images/Medicament.png\" style=\"width: 24px; position: relative; top: -3px; left: -3px\" />");
+	Resco.Controls.KOEngine.instance.addTemplate("tmplMedicineView", "<img src=\"Images/Medicament.png\" style=\"width: 15px\" />");
 
-	Resco.Controls.KOEngine.instance.addTemplate("tmplMedicineViewSelected", "<img src=\"Images/Medicament.png\" style=\"width: 24px; position: relative; top: -3px; left: -3px; display: inline-block\" /> <span style=\"font-size: 10px; font-weight: bold\" data-bind=\"text: activity.dose().name()\" /><br />\
+	Resco.Controls.KOEngine.instance.addTemplate("tmplMedicineViewSelected", "<img src=\"Images/Medicament.png\" style=\"width: 15px\" /> <span style=\"font-size: 10px; font-weight: bold\" data-bind=\"text: activity.dose().name()\" /><br />\
 	<span style=\"font-size: 10px\" data-bind=\"text: moment(activity.startedOn()).format('HH:mm')\" />");
 
-	Resco.Controls.KOEngine.instance.addTemplate("tmplMedicineViewWide", "<img src=\"Images/Medicament.png\" style=\"width: 24px; position: relative; top: -3px; left: -3px; display: inline-block\" \" />\
+	Resco.Controls.KOEngine.instance.addTemplate("tmplMedicineViewWide", "<img src=\"Images/Medicament.png\" style=\"width: 15px\" /> \
 <span style=\"font-weight: bold\" data-bind=\"text: activity.dose().name()\" /> \
 <span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ')'\" />");
 }

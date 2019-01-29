@@ -53,6 +53,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="Model\activity.ts" />
     <TypeScriptCompile Include="Model\child.ts" />
+    <TypeScriptCompile Include="Model\meal.ts" />
     <TypeScriptCompile Include="Model\event.ts" />
     <TypeScriptCompile Include="Model\note.ts" />
     <TypeScriptCompile Include="Model\diaper.ts" />
