@@ -3,8 +3,8 @@
 		constructor(parent: TimeLine, activity: Model.Activity) {
 			super(parent, activity);
 
-			this.darkColor("#333333");
-			this.lightColor("#eeeeee");
+            this.darkColor("#7c909e");
+			this.lightColor("#f0f2f3");
 
 			this.showNotes = false;
 		}

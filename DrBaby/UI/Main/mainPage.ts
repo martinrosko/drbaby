@@ -38,10 +38,12 @@
 
 			this.feedingActionLabel = ko.computed<string>(() => {
 				var lastFeeding = this.lastFeeding();
-				if (lastFeeding) {
-					var lastWasLeft = lastFeeding.breast() === Model.Breast.Left;
-					return "Feed " + (lastWasLeft ? "right" : "left");
-				}
+                while (lastFeeding && lastFeeding.breast() !== Model.Breast.Left && lastFeeding.breast() !== Model.Breast.Right) {
+                    lastFeeding = <Model.Feeding>lastFeeding.previous()
+                }
+                if (lastFeeding)
+                    return "Feed " + (lastFeeding.breast() === Model.Breast.Left ? "right" : "left");
+
 				return "Feed";
 			}, this);
 
@@ -51,8 +53,8 @@
 				// sleep duration labels
 				var activeSleep = this.activeSleep();
 				if (activeSleep) {
-					this.activeSleepDurationLabel(this._getDurationLabel(moment(now).diff(moment(activeSleep.startedOn()), "seconds")));
-					this.fallingAsleepDurationLabel(this._getDurationLabel(moment(now).diff(moment(activeSleep.lullingStartedOn()), "seconds"), true, false));
+					this.activeSleepDurationLabel(Application.getDurationLabel(moment(now).diff(moment(activeSleep.startedOn()), "seconds")));
+					this.fallingAsleepDurationLabel(Application.getDurationLabel(moment(now).diff(moment(activeSleep.lullingStartedOn()), "seconds"), true, false));
 				}
 				else {
 					this.lastSleepLabel(this._getLastActivityDiff(now, this.lastSleep()));
@@ -63,7 +65,7 @@
 				// activeFeedingDuration
 				var activeFeeding = this.activeFeeding();
 				if (activeFeeding) {
-					this.activeFeedingDurationLabel(this._getDurationLabel(moment(now).diff(moment(activeFeeding.startedOn()), "seconds"), true, false));
+					this.activeFeedingDurationLabel(Application.getDurationLabel(moment(now).diff(moment(activeFeeding.startedOn()), "seconds"), true, false));
 				}
 				else {
 					this.lastFedLabel(this._getLastActivityDiff(now, this.lastFeeding()));
@@ -91,7 +93,7 @@
 		private _getLastActivityDiff(now: number, activity: Model.Activity): string {
 			if (activity && activity.endedOn()) {
 				var activityDiff = moment(now).diff(moment(activity.endedOn()), "second");
-				return this._getDurationLabel(activityDiff);
+				return Application.getDurationLabel(activityDiff);
 			}
 			return "N/A"
 		}
@@ -193,8 +195,10 @@
 				var medicine = new Model.Medicine();
 				medicine.startedOn(when);
 				medicine.endedOn(when);
-				medicine.dose(doses[index]);
-				service.saveMedicine(medicine);
+                medicine.dose(doses[index]);
+                medicine.save().then(() => {
+                    this.timeLine.addActivity(medicine);
+                });
 			}, this, "Medicament", false, "Cancel", doses.map(d => d.name()));
 		}
 
@@ -229,18 +233,29 @@
 		}
 
 		public async finishActiveSleep(): Promise<void> {
-			var activeSleep = this.activeSleep();
-			var wokeUpOn = new Date();
+            var activeSleep = this.activeSleep();
+            var lastSleep = this.lastSleep();
+            var wokeUpOn = new Date();
+            var lastPlace = lastSleep ? lastSleep.place() : Model.SleepPlace.Cot; // TODO: Get Default from settings
+            var places = ["Cot", "Scarf", "Carrier", "Stroller", "Couch", "Bed", "Arms", "Car", "Other"];
+            var cancelLabel = places[lastPlace];
+            places.splice(lastPlace, 1);
 
 			this.messageBox(index => {
-				activeSleep.endedOn(wokeUpOn);
-				activeSleep.place(<Model.SleepPlace>(index));
+                activeSleep.endedOn(wokeUpOn);
+                if (index < 0)
+                    activeSleep.place(lastPlace);
+                else if (index < lastPlace)
+                    activeSleep.place(index);
+                else
+                    activeSleep.place(index + 1);
+                    
 				activeSleep.save().then(() => {
 					this.lastSleep(activeSleep);
 					this.timeLine.addActivity(activeSleep);
 					this.activeSleep(undefined);
 				});
-			}, this, "Place", false, "Cancel", ["Cot", "Scarf", "Carrier", "Stroller", "Couch", "Bed", "Arms", "Car", "Other"]);
+			}, this, "Place", false, cancelLabel, places, true, 5);
 		}
 
 		public async fallAsleep(when: Date): Promise<void> {
@@ -259,18 +274,22 @@
 		public getLastSleepLabel(sleep: Model.Sleep): string {
 			var fellAsleepMmnt = moment(sleep.startedOn());
 			var duration = moment(sleep.endedOn()).diff(fellAsleepMmnt, "minute");
-			return fellAsleepMmnt.format("hh:mm") + " - " + (Model.SleepPlace[sleep.place()]) + " " + this._getDurationLabel(duration);
+			return fellAsleepMmnt.format("hh:mm") + " - " + (Model.SleepPlace[sleep.place()]) + " " + Application.getDurationLabel(duration);
 		}
 
 		public async startNewFeeding(): Promise<void> {
 			var breast = Model.Breast.Left;
-			var lastFeeding = this.lastFeeding();
+            var lastFeeding = this.lastFeeding();
+            while (lastFeeding && lastFeeding.breast() !== Model.Breast.Left && lastFeeding.breast() !== Model.Breast.Right)
+                lastFeeding = <Model.Feeding>lastFeeding.previous();
+
 			if (lastFeeding && lastFeeding.breast() === Model.Breast.Left)
 				breast = Model.Breast.Right;
 
 			var newFeeding = new Model.Feeding();
 			newFeeding.startedOn(new Date());
-			newFeeding.breast(breast);
+            newFeeding.breast(breast);
+            newFeeding.previous(this.lastFeeding());
 
 			this.activeFeedingDurationLabel("00:00");
 			this.activeFeeding(newFeeding);
@@ -281,7 +300,7 @@
 		public getLastFeedingLabel(feeding: Model.Feeding): string {
 			var fellAsleepMmnt = moment(feeding.startedOn());
 			var duration = moment(feeding.endedOn()).diff(fellAsleepMmnt, "minute");
-			return fellAsleepMmnt.format("hh:mm") + " - " + (Model.Breast[feeding.breast()]) + " " + duration + " minut"; //this._getDurationLabel(duration);
+			return fellAsleepMmnt.format("hh:mm") + " - " + (Model.Breast[feeding.breast()]) + " " + duration + " minut"; //Application.getDurationLabel(duration);
 		}
 
         public async finishActiveFeeding(): Promise<void> {
@@ -334,8 +353,15 @@
 
 		public async deleteActivity(activity: Model.Activity): Promise<void> {
 			var deleted = activity.delete();
-			if (deleted)
-				this.timeLine.removeActivity(activity);
+            if (deleted) {
+                this.timeLine.removeActivity(activity);
+
+                // update lastFeedingLabel (force computed to reevaluate)
+                if (activity === this.lastFeeding())
+                    this.lastFeeding(<Model.Feeding>activity.previous());
+                else if (activity === this.lastSleep())
+                    this.lastSleep(<Model.Sleep>activity.previous());
+            }
 		}
 	}
 
@@ -418,9 +444,8 @@
 		public addActivites(newActivities: Model.Activity[]): void {
 			var activities = this.activities();
 			var relevantActivities = newActivities.filter(a => this._activityPredicate(a));
-			for (let activity of relevantActivities) {
-				let activityView = this._getActivityView(activity);
-				activities.push(activityView);
+            for (let activity of relevantActivities) {
+                this.addActivity(activity);
 			}
 			this.activities.valueHasMutated();
 		}
@@ -463,57 +488,71 @@
 		}
 
 		public addActivity(activity: Model.Activity): void {
-			var activityView = this._getActivityView(activity);
+            var activityView = this._getActivityView(activity);
+
+            var activityViews = this.activities();
+            for (var i = activityViews.length - 1; i >= 0; i--) {
+                if (activityViews[i].activity.type === activity.type) {
+                    activity.previous(activityViews[i].activity);
+                    break;
+                }
+            }
 			this.activities.push(activityView);
 		}
 
 		public removeActivity(activity: Model.Activity): void {
 			var activities = this.activities();
 			var index = activities.findIndex(aView => aView.activity === activity || (aView.activity.id && activity.id && activity.id.Value === aView.activity.id.Value));
-			if (index >= 0)
-				this.activities.splice(index, 1);
+            if (index >= 0) {
+                // check activity whose previous is deleted activity
+                var next = activities.firstOrDefault(aView => aView.activity.previous() === activity);
+                if (next)
+                    next.activity.previous(activity.previous());
+
+                this.activities.splice(index, 1);
+            }
 		}
 	}
 
 	//style=\"background: #d3ffd6\" 
 
 	Resco.Controls.KOEngine.instance.addTemplate("tmplMainPage", "<div style=\"background: #8db7ce\">\
-	<!-- ko if: bShowHeader --><div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #4e5c6d; color: white; font-weight: bold\">\
+	<!-- ko if: bShowHeader --><div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #ECECEC; color: #253344; font-weight: bold; text-shadow: 0px 1px 0 #c4d0da\">\
 		<span data-bind=\"text: DrBaby.Application.child.name\" /> - <span data-bind=\"text: DrBaby.Application.child.daysSinceBirth\" />.den<br />\
 	</div>\
 	<!-- /ko -->\
-	<div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #e8f7f9\">\
+	<div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #cbd5d6\">\
 	<span data-bind=\"text: actualTime, css: {clockBig: !activeFeeding() && !activeSleep(), clockMedium: activeFeeding() || activeSleep()}\" />\
 	</div>\
 	<!-- ko if: !activeFeeding() && !activeSleep() -->\
-	<div style=\"padding: 10px; display: flex; flex-direction: row; background: #8db7ce; border-bottom: solid 1px black\">\
-		<div class=\"action\" style=\"flex: 1 1 47%\" data-bind=\"click: startNewFeeding\">\
+	<div style=\"padding: 10px; display: flex; flex-direction: row; background: #ECECEC; border-bottom: solid 1px black\">\
+		<a class=\"button blue_alt\" style=\"flex: 1 1 47%\" data-bind=\"click: startNewFeeding\" href=\"#\">\
 			<span data-bind=\"text: feedingActionLabel\" /><br />\
 			<span class=\"clockSmall\" data-bind=\"text: lastFedLabel\" />\
-		</div>\
-		<div class=\"action\" style=\"flex: 0 1 6%; font-size: 50px; margin: 0px 10px\" data-bind=\"click: addEvent\">\
+		</a>\
+		<a class=\"button blue_alt\" style=\"flex: 0 1 6%; font-size: 50px; margin: 0px 10px\" data-bind=\"click: addEvent\" href=\"#\">\
 			+\
-		</div>\
-		<div class=\"action\" style=\"flex: 1 1 47%\" data-bind=\"click: startNewSleep\">\
+		</a>\
+		<a class=\"button blue_alt\" style=\"flex: 1 1 47%\" data-bind=\"click: startNewSleep\" href=\"#\">\
 			Spinkat<br />\
 			<span class=\"clockSmall\" data-bind=\"text: lastSleepLabel\" />\
-		</div>\
+		</a>\
 	</div>\
 	<!-- /ko -->\
 	<!-- ko if: activeSleep() -->\
-	<div style=\"padding: 5px; margin: 5px; display: flex; justify-content: center; align-items: center; text-align: center\" data-bind=\"style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column'}\">\
+	<div style=\"padding: 5px; display: flex; justify-content: center; align-items: center; text-align: center; background: #ECECEC\" data-bind=\"style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column'}\">\
 		<!-- ko if: !activeSleep().startedOn() -->\
 		<div style=\"flex-grow: 1\">\
 			Zaspava<br />\
 			<span class=\"clockBig\" data-bind=\"text: fallingAsleepDurationLabel\" />\
 		</div>\
 		<div data-bind=\"style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%'}\">\
-			<div class=\"action buttonBig\" data-bind=\"click: fallAsleep.bind($data, new Date())\">\
+			<a class=\"button blue_alt buttonBig\" data-bind=\"click: fallAsleep.bind($data, new Date())\" href=\"#\">\
 				Zaspal\
-			</div>\
-			<div class=\"action buttonBig\" data-bind=\"click: cancelActiveSleep\">\
+			</a>\
+			<a class=\"button blue_alt buttonBig\" data-bind=\"click: cancelActiveSleep\" href=\"#\">\
 				Nebude spat\
-			</div>\
+			</a>\
 		</div>\
 		<!-- /ko -->\
 		<!-- ko if: activeSleep().startedOn() -->\
@@ -522,29 +561,29 @@
 			<span class=\"clockBig\" data-bind=\"text: activeSleepDurationLabel\" />\
 		</div>\
 		<div data-bind=\"style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%'}\">\
-			<div class=\"action buttonBig\" data-bind=\"click: finishActiveSleep\">\
+			<a class=\"button blue_alt buttonBig\" data-bind=\"click: finishActiveSleep\" href=\"#\">\
 				Vstava\
-			</div>\
-			<div class=\"action buttonBig\" data-bind=\"click: fallAsleep.bind($data, undefined)\">\
+			</a>\
+			<a class=\"button blue_alt buttonBig\" data-bind=\"click: fallAsleep.bind($data, undefined)\" href=\"#\">\
 				Este nezaspal\
-			</div>\
+			</a>\
 		</div>\
 		<!-- /ko -->\
 	</div>\
 	<!-- /ko -->\
 	<!-- ko if: activeFeeding() && !activeSleep() -->\
-	<div style=\"padding: 5px; margin: 5px; display: flex; justify-content: center; align-items: center; text-align: center\" data-bind=\"style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column'}\">\
+	<div style=\"padding: 5px; display: flex; justify-content: center; align-items: center; text-align: center; background: #ECECEC\" data-bind=\"style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column'}\">\
 		<div style=\"flex-grow: 1\">\
 			Papá<br />\
 			<span class=\"clockBig\" data-bind=\"text: activeFeedingDurationLabel\" />\
 		</div>\
 		<div data-bind=\"style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%'}\">\
-			<div class=\"action buttonBig\" data-bind=\"click: finishActiveFeeding\">\
+			<a class=\"button blue_alt buttonBig\" data-bind=\"click: finishActiveFeeding\" href=\"#\">\
 				Dopapal\
-			</div>\
-			<div class=\"action buttonBig\" data-bind=\"click: cancelActiveFeeding\">\
+			</a>\
+			<a class=\"button blue_alt buttonBig\" data-bind=\"click: cancelActiveFeeding\" href=\"#\">\
 				Zrusit\
-			</div>\
+			</a>\
 		</div>\
 	</div>\
 	<!-- /ko -->\

@@ -17,18 +17,123 @@ div.main {
 }
 
 .clockBig {
-	font-weight: bold;
-	font-size: 96px;
+    font-weight: bold;
+    font-size: 96px;
+    text-shadow: 2px 3px 5px #4c888e;
+    color: #313142;
 }
 
 .clockMedium {
-	font-weight: bold;
-	font-size: 48px;
+    font-weight: bold;
+    font-size: 48px;
+    text-shadow: 1px 2px 3px #4c888e;
+    color: #313142;
 }
 
 .clockSmall {
-	font-weight: bold;
-	font-size: 32px;
+    font-weight: bold;
+    font-size: 32px;
+    text-shadow: 1px 2px 3px #4c678e;
+    color: #313142;
+}
+
+/*a.button {
+    background: #ECECEC;
+    border-radius: 5px;
+    padding: 10px 20px;
+    display: block;
+    font-weight: bold;
+    color: #7f7f7f;
+    text-decoration: none;
+    text-shadow: 0px 1px 0px #fff;
+    border: 1px solid #a7a7a7;
+    margin: 0px auto;
+    text-align: center;
+    box-shadow: 0px 2px 1px white inset, 0px -2px 8px white, 0px 2px 5px rgba(0, 0, 0, 0.1), 0px 8px 10px rgba(0, 0, 0, 0.1);
+    -webkit-transition: box-shadow 0.5s;
+}
+
+a.button:hover {
+    box-shadow: 0px 2px 1px white inset, 0px -2px 20px white, 0px 2px 5px rgba(0, 0, 0, 0.1), 0px 8px 10px rgba(0, 0, 0, 0.1);
+}
+
+a.button:active {
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.5) inset, 0px -2px 20px white, 0px 1px 5px rgba(0, 0, 0, 0.1), 0px 2px 10px rgba(0, 0, 0, 0.1);
+    background: -webkit-linear-gradient(top, #d1d1d1 0%,#ECECEC 100%);
+}*/
+
+a.button {
+    -moz-box-shadow: inset 0 0 0 1px #63ad0d;
+    -webkit-box-shadow: inset 0 0 0 1px #63ad0d;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    background: #eee;
+    background: -webkit-gradient(linear, 0 0, 0 bottom, from(#eee), to(#e2e2e2));
+    background: -moz-linear-gradient(#eee, #e2e2e2);
+    background: linear-gradient(#eee, #e2e2e2);
+    border: solid 1px #d0d0d0;
+    border-bottom: solid 3px #b2b1b1;
+    border-radius: 3px;
+    box-shadow: inset 0 0 0 1px #f5f5f5;
+    color: #555;
+    display: inline-block;
+    font-weight: bold;
+    padding: 10px 20px;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+    text-shadow: 0 1px 0 #fafafa;
+}
+
+a.button:hover {
+    background: #e4e4e4;
+    background: -webkit-gradient(linear, 0 0, 0 bottom, from(#e4e4e4), to(#ededed));
+    background: -moz-linear-gradient(#e4e4e4, #ededed);
+    background: linear-gradient(#e4e4e4, #ededed);
+    border: solid 1px #c2c2c2;
+    border-bottom: solid 3px #b2b1b1;
+    box-shadow: inset 0 0 0 1px #efefef;
+}
+
+a.button:active {
+    background: #dfdfdf;
+    background: -webkit-gradient(linear, 0 0, 0 bottom, from(#dfdfdf), to(#e3e3e3));
+    background: -moz-linear-gradient(#dfdfdf, #e3e3e3);
+    background: linear-gradient(#dfdfdf, #e3e3e3);
+    border: solid 1px #959595;
+    box-shadow: inset 0 10px 15px 0 #c4c4c4;
+    top: 2px;
+}
+
+    a.button.blue_alt {
+        background: #becbd6;
+        background: -webkit-gradient(linear, 0 0, 0 bottom, from(#becbd6), to(#8da5b7));
+        background: -moz-linear-gradient(#becbd6, #8da5b7);
+        background: linear-gradient(#becbd6, #8da5b7);
+        border: solid 1px #a1aeb7;
+        border-bottom: solid 3px #62727e;
+        box-shadow: inset 0 0 0 1px #d8e0e6;
+        color: #253344;
+        text-shadow: 0 1px 0 #c4d0da;
+    }
+
+a.button.blue_alt:hover {
+    background: #97adbd;
+    background: -webkit-gradient(linear, 0 0, 0 bottom, from(#97adbd), to(#a8bac8));
+    background: -moz-linear-gradient(#97adbd, #a8bac8);
+    background: linear-gradient(#97adbd, #a8bac8);
+    border: solid 1px #96a2ab;
+    border-bottom: solid 3px #62727e;
+    box-shadow: inset 0 0 0 1px #c0ced7;
+}
+
+a.button.blue_alt:active {
+    background: #8fa6b6;
+    background: -webkit-gradient(linear, 0 0, 0 bottom, from(#8fa6b6), to(#8aa0b0));
+    background: -moz-linear-gradient(#8fa6b6, #8aa0b0);
+    background: linear-gradient(#8fa6b6, #8aa0b0);
+    border: solid 1px #606f7a;
+    box-shadow: inset 0 10px 15px 0 #7e92a1;
 }
 
 .action {
@@ -48,6 +153,7 @@ div.main {
 	font-weight: bold;
 	margin-bottom: 10px;
 	min-width: 230px;
+    width: 80%;
 }
 
 .indexLine {
@@ -58,16 +164,17 @@ div.main {
 }
 
 .infoBubble {
-	box-sizing: border-box;
-	position: absolute;
-	z-index: 2;
-	border-radius: 15px;
-	border-style: solid;
-	border-width: 2px;
-	overflow: hidden;
-	display: flex;
-	flex-direction: row;
-	align-content: center;
+    box-sizing: border-box;
+    position: absolute;
+    z-index: 2;
+    border-radius: 15px;
+    border-style: solid;
+    border-width: 2px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    box-shadow: 3px 3px 6px 2px #314240;
 }
 
 .infoBubbleUnselected {

@@ -21,7 +21,7 @@
                 this._changePlace();
             }
             else {
-                super._handleActionMenu(index - 3);
+                super._handleActionMenu(index - 1);
             }
         }
 
@@ -53,6 +53,7 @@
 
 	Resco.Controls.KOEngine.instance.addTemplate("tmplSleepViewSelected", "<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.SleepPlace[activity.place()]\" /> <span data-bind=\"text: duration()\" />minut \
 <span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'\" /><br />\
+<span style=\"font-size: 10px\" data-bind=\"text: 'po: ' + previousBeforeLabel() \" />\
 <!-- ko if: activity.quality() !== undefined -->\
 	<span style=\"font-size: 10px\" data-bind=\"text: 'Quality: ' + DrBaby.Model.SleepQuality[activity.quality()]\" />\
 <!-- /ko -->");	

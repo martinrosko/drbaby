@@ -75,28 +75,6 @@
 
 		public appended(elements: HTMLElement[]): void {
 		}
-
-		protected _getDurationLabel(duration: number, bSeconds: boolean = false, bHours: boolean = true): string {
-			var durHours = Math.floor(duration / 3600).toString();
-			if (durHours.length < 2)
-				durHours = "0" + durHours;
-			var minutes = duration % 3600;
-			var durMinutes = Math.floor(minutes / 60).toString();
-			if (durMinutes.length < 2)
-				durMinutes = "0" + durMinutes;
-			var durSeconds = (duration % 60).toString();
-			if (durSeconds.length < 2)
-				durSeconds = "0" + durSeconds;
-
-			var result = "";
-			if (bHours)
-				result = durHours + ":";
-			result += durMinutes;
-			if (bSeconds)
-				result += ":" + durSeconds;
-
-			return result;
-		}
 	}
 
 	Resco.Controls.KOEngine.instance.addTemplate("tmplBasePage", "Virtual BasePage");

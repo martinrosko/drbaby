@@ -11,7 +11,8 @@
 			this.quality = ko.observable<SleepQuality>();
 			this.place = ko.observable<SleepPlace>();
 			this.daySleep = ko.observable<boolean>();
-			this.entityName = "sleep";
+            this.entityName = "sleep";
+            this.type = ActivityType.Sleep;
 		}
 
 		protected async _saveInternal(service: Data.WebService.IAppService): Promise<void> {

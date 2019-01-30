@@ -95,18 +95,18 @@
 				var daySleeps = sleeps.filter(s => s.startedOn() < evening);
 				this.daySleeps(daySleeps.map(a => new SleepView(null, a)));
 				this.daySleeps().forEach(av => av.updateBaseLine(moment(from)));
-				this.daySleepMin(this._getDurationLabel(this._getMinimumDuration(daySleeps)));
-				this.daySleepMax(this._getDurationLabel(this._getMaximumDuration(daySleeps)));
+				this.daySleepMin(Application.getDurationLabel(this._getMinimumDuration(daySleeps)));
+				this.daySleepMax(Application.getDurationLabel(this._getMaximumDuration(daySleeps)));
 				var daySleepDuration = this._getActivitiesLength(daySleeps);
-				this.daySleepAvgDuration(this._getDurationLabel(Math.round(daySleepDuration / daySleeps.length)));
+				this.daySleepAvgDuration(Application.getDurationLabel(Math.round(daySleepDuration / daySleeps.length)));
 
 				var nightSleeps = sleeps.filter(s => s.startedOn() >= evening);
 				this.nightSleeps(nightSleeps.map(a => new SleepView(null, a)));
 				this.nightSleeps().forEach(av => av.updateBaseLine(moment(evening)));
-				this.nightSleepMin(this._getDurationLabel(this._getMinimumDuration(nightSleeps)));
-				this.nightSleepMax(this._getDurationLabel(this._getMaximumDuration(nightSleeps)));
+				this.nightSleepMin(Application.getDurationLabel(this._getMinimumDuration(nightSleeps)));
+				this.nightSleepMax(Application.getDurationLabel(this._getMaximumDuration(nightSleeps)));
 				var	nightSleepDuration = this._getActivitiesLength(nightSleeps);
-				this.nightSleepAvgDuration(this._getDurationLabel(Math.round(nightSleepDuration / nightSleeps.length)));
+				this.nightSleepAvgDuration(Application.getDurationLabel(Math.round(nightSleepDuration / nightSleeps.length)));
 
 				if (nightSleeps.length > 0) {
 					this.firstNightSleepStartedOn(moment(nightSleeps[0].startedOn()).format("HH:mm"));
@@ -122,9 +122,9 @@
 				var nightDuration = this._getActivitiesLength(nightSleeps);
 				var sleepDuration = dayDuration + nightDuration;
 
-				this.sleepDuration(this._getDurationLabel(sleepDuration));
-				this.daySleepDuration(this._getDurationLabel(dayDuration));
-				this.nightSleepDuration(this._getDurationLabel(nightDuration));
+				this.sleepDuration(Application.getDurationLabel(sleepDuration));
+				this.daySleepDuration(Application.getDurationLabel(dayDuration));
+				this.nightSleepDuration(Application.getDurationLabel(nightDuration));
 
 				var feedings = activities.filter(a => a instanceof Model.Feeding).map(a => <Model.Feeding>a);
 				this.feedings(feedings.map(a => new FeedingView(null, a)));
@@ -133,13 +133,13 @@
 				this.feedingCount(feedings.length);
 				var feedingDuration = this._getActivitiesLength(feedings);
 
-				this.feedingDuration(this._getDurationLabel(feedingDuration));
-				this.feedingAvgDuration(this._getDurationLabel(Math.round(feedingDuration / feedings.length), true, false));
-				this.feedingMin(this._getDurationLabel(this._getMinimumDuration(feedings)));
-				this.feedingMax(this._getDurationLabel(this._getMaximumDuration(feedings)));
+				this.feedingDuration(Application.getDurationLabel(feedingDuration));
+				this.feedingAvgDuration(Application.getDurationLabel(Math.round(feedingDuration / feedings.length), true, false));
+				this.feedingMin(Application.getDurationLabel(this._getMinimumDuration(feedings)));
+				this.feedingMax(Application.getDurationLabel(this._getMaximumDuration(feedings)));
 
 				var avgDiff = this._getActivitiesAvgDiff(feedings);
-				this.feedingAvgDiff(this._getDurationLabel(avgDiff));
+				this.feedingAvgDiff(Application.getDurationLabel(avgDiff));
 
 				var dosesDict = new Resco.Dictionary<string, DosesCounter>();
 

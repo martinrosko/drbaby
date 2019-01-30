@@ -21,6 +21,7 @@
 			super();
 			this.entityName = "medicine";
 			this.dose = ko.observable<Dose>();
+            this.type = ActivityType.Medicine;
 		}
 
 		protected async _saveInternal(service: Data.WebService.IAppService): Promise<void> {

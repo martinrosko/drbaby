@@ -88,7 +88,8 @@
      <span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.Breast[activity.breast()]\" /> \
 <!-- /ko -->\
 <span data-bind=\"text: durationLabel()\" /> \
-<span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'\" />\
+<span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'\" /><br />\
+<span style=\"font-size: 10px\" data-bind=\"text: 'po: ' + previousBeforeLabel() \" />\
 <!-- ko if: activity.meals().length > 0 -->\
     <div style=\"font-size: 10px\">\
     <!-- ko if: activity.breast() !== DrBaby.Model.Breast.None --><img style=\"width: 9px\" src=\"Images/Meal.jpg\" /><!-- /ko -->\

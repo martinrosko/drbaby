@@ -4,12 +4,12 @@
 		public end: KnockoutObservable<number>;
 		public duration: KnockoutObservable<number>;
 		public durationLabel: KnockoutComputed<string>;
+        public previousBeforeLabel: KnockoutComputed<string>;
 		public contentTemplateName: KnockoutComputed<string>;
 		public activity: Model.Activity;
 		public selected: KnockoutObservable<boolean>;
 		public showInfoBubble: KnockoutComputed<boolean>;
 		public parent: TimeLine;
-		public previousActivity: KnockoutObservable<ActivityView>;
 		public showNotes: boolean;
 
 		public darkColor: KnockoutObservable<string>;
@@ -42,8 +42,6 @@
 				return this._getTemplateName(isWide, isSelected);
 			}, this);
 
-			this.previousActivity = ko.observable<ActivityView>();
-
 			this.duration = ko.observable<number>(0);
 			this.durationLabel = ko.computed<string>(() => {
 				var dur = this.duration();
@@ -54,7 +52,16 @@
 					minuteLabel = "minuty";
 
 				return dur + minuteLabel;
-			}, this);
+            }, this);
+
+            this.previousBeforeLabel = ko.computed<string>(() => {
+                var prev = this.activity.previous();
+                if (prev && prev.endedOn()) {
+                    var before = moment(activity.startedOn()).diff(moment(prev.endedOn()), "seconds");
+                    return Application.getDurationLabel(before);
+                }
+                return "N/A";
+            }, this);
 
 			this.showNotes = true;
 		}

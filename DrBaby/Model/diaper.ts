@@ -8,6 +8,7 @@
 			this.amount = ko.observable<DiaperAmount>(DiaperAmount.Normal);
 			this.load = ko.observable<DiaperLoad>();
 			this.entityName = "diaper";
+            this.type = ActivityType.Diaper;
 		}
 
 		protected async _saveInternal(service: Data.WebService.IAppService): Promise<void> {

@@ -129,6 +129,7 @@
 
 			entity.addTypeValue("actualstart", Resco.Data.WebService.CrmType.DateTime, medicine.startedOn());
 			entity.addTypeValue("actualend", Resco.Data.WebService.CrmType.DateTime, medicine.startedOn());
+            entity.addTypeValue("dose", Resco.Data.WebService.CrmType.Lookup, new Resco.Data.WebService.EntityReference("dose", medicine.dose().id));
 
 			var result = await this.m_service.executeRequest(medicine.id ? this.m_service.buildUpdateRequest(entity) : this.m_service.buildCreateRequest(entity));
 			if (!medicine.id) {
