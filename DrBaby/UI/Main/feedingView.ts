@@ -4,7 +4,7 @@
 			super(parent, activity);
 
 			this.darkColor("navy");
-			this.lightColor("#EEEEF8");
+            this.lightColor("238, 238, 248");//"#EEEEF8");
 		}
 
 		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {

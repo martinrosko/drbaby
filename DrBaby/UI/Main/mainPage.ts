@@ -517,34 +517,34 @@
 	//style=\"background: #d3ffd6\" 
 
 	Resco.Controls.KOEngine.instance.addTemplate("tmplMainPage", "<div style=\"background: #8db7ce\">\
-	<!-- ko if: bShowHeader --><div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #ECECEC; color: #253344; font-weight: bold; text-shadow: 0px 1px 0 #c4d0da\">\
+	<!-- ko if: bShowHeader --><div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #ECECEC; color: #253344; font-weight: bold\">\
 		<span data-bind=\"text: DrBaby.Application.child.name\" /> - <span data-bind=\"text: DrBaby.Application.child.daysSinceBirth\" />.den<br />\
 	</div>\
 	<!-- /ko -->\
-	<div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #cbd5d6\">\
-	<span data-bind=\"text: actualTime, css: {clockBig: !activeFeeding() && !activeSleep(), clockMedium: activeFeeding() || activeSleep()}\" />\
+	<div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #0e1423; color: #ffffff\">\
+	<span data-bind=\"text: actualTime, css: {clockBig: !activeFeeding() && !activeSleep(), whiteClockSkyShadow: !activeFeeding() && !activeSleep(), clockMedium: activeFeeding() || activeSleep(), whiteClockSkyShadowMedium: activeFeeding() || activeSleep()}\" />\
 	</div>\
 	<!-- ko if: !activeFeeding() && !activeSleep() -->\
-	<div style=\"padding: 10px; display: flex; flex-direction: row; background: #ECECEC; border-bottom: solid 1px black\">\
-		<a class=\"button blue_alt\" style=\"flex: 1 1 47%\" data-bind=\"click: startNewFeeding\" href=\"#\">\
+	<div style=\"padding: 20px 10px; display: flex; flex-direction: row; background: #57799C; border-bottom: solid 1px black\">\
+		<a class=\"button blue_alt buttonSmall\" style=\"flex: 1 1 47%\" data-bind=\"click: startNewFeeding\" href=\"#\">\
 			<span data-bind=\"text: feedingActionLabel\" /><br />\
 			<span class=\"clockSmall\" data-bind=\"text: lastFedLabel\" />\
 		</a>\
-		<a class=\"button blue_alt\" style=\"flex: 0 1 6%; font-size: 50px; margin: 0px 10px\" data-bind=\"click: addEvent\" href=\"#\">\
+		<a class=\"button blue_alt buttonSmall\" style=\"flex: 0 1 6%; font-size: 50px; margin: 0px 10px; padding-top: 4px\" data-bind=\"click: addEvent\" href=\"#\">\
 			+\
 		</a>\
-		<a class=\"button blue_alt\" style=\"flex: 1 1 47%\" data-bind=\"click: startNewSleep\" href=\"#\">\
+		<a class=\"button blue_alt buttonSmall\" style=\"flex: 1 1 47%\" data-bind=\"click: startNewSleep\" href=\"#\">\
 			Spinkat<br />\
 			<span class=\"clockSmall\" data-bind=\"text: lastSleepLabel\" />\
 		</a>\
 	</div>\
 	<!-- /ko -->\
 	<!-- ko if: activeSleep() -->\
-	<div style=\"padding: 5px; display: flex; justify-content: center; align-items: center; text-align: center; background: #ECECEC\" data-bind=\"style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column'}\">\
+	<div style=\"padding: 5px; display: flex; justify-content: center; align-items: center; text-align: center; background: #57799C\" data-bind=\"style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column'}\">\
 		<!-- ko if: !activeSleep().startedOn() -->\
 		<div style=\"flex-grow: 1\">\
 			Zaspava<br />\
-			<span class=\"clockBig\" data-bind=\"text: fallingAsleepDurationLabel\" />\
+			<span class=\"clockBig whiteClockBlackShadow\" data-bind=\"text: fallingAsleepDurationLabel\" />\
 		</div>\
 		<div data-bind=\"style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%'}\">\
 			<a class=\"button blue_alt buttonBig\" data-bind=\"click: fallAsleep.bind($data, new Date())\" href=\"#\">\
@@ -558,7 +558,7 @@
 		<!-- ko if: activeSleep().startedOn() -->\
 		<div style=\"flex-grow: 1\">\
 			Spinka<br />\
-			<span class=\"clockBig\" data-bind=\"text: activeSleepDurationLabel\" />\
+			<span class=\"clockBig whiteClockBlackShadow\" data-bind=\"text: activeSleepDurationLabel\" />\
 		</div>\
 		<div data-bind=\"style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%'}\">\
 			<a class=\"button blue_alt buttonBig\" data-bind=\"click: finishActiveSleep\" href=\"#\">\
@@ -572,10 +572,10 @@
 	</div>\
 	<!-- /ko -->\
 	<!-- ko if: activeFeeding() && !activeSleep() -->\
-	<div style=\"padding: 5px; display: flex; justify-content: center; align-items: center; text-align: center; background: #ECECEC\" data-bind=\"style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column'}\">\
+	<div style=\"padding: 5px; display: flex; justify-content: center; align-items: center; text-align: center; background: #57799C\" data-bind=\"style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column'}\">\
 		<div style=\"flex-grow: 1\">\
 			Papá<br />\
-			<span class=\"clockBig\" data-bind=\"text: activeFeedingDurationLabel\" />\
+			<span class=\"clockBig whiteClockBlackShadow\" data-bind=\"text: activeFeedingDurationLabel\" />\
 		</div>\
 		<div data-bind=\"style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%'}\">\
 			<a class=\"button blue_alt buttonBig\" data-bind=\"click: finishActiveFeeding\" href=\"#\">\

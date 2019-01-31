@@ -4,7 +4,7 @@
 			super(parent, activity);
 
 			this.darkColor("red");
-			this.lightColor("white");
+            this.lightColor("255, 255, 255");
 		}
 
 		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {

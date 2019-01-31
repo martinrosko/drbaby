@@ -3,8 +3,8 @@
 		constructor(parent: TimeLine, activity: Model.Activity) {
 			super(parent, activity);
 
-			this.darkColor((<Model.Diaper>activity).load() === Model.DiaperLoad.Pee ? "orange" : "brown");
-			this.lightColor((<Model.Diaper>activity).load() === Model.DiaperLoad.Pee ? "#FFEBB2" : "#FFD5A1");
+            this.darkColor((<Model.Diaper>activity).load() === Model.DiaperLoad.Pee ? "orange" : "brown");
+            this.lightColor((<Model.Diaper>activity).load() === Model.DiaperLoad.Pee ? "255, 213, 161" : "255, 213, 161");
 		}
 
 		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {

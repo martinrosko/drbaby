@@ -163,7 +163,7 @@
 	Resco.Controls.KOEngine.instance.addTemplate("tmplActivityTimeLine", "<div style=\"position: absolute; left: 45px; width: 15px; opacity: 0.65\" data-bind=\"style: {bottom: start() + 'px', height: duration() + 'px', background: darkColor()}\"></div>");
 
 	Resco.Controls.KOEngine.instance.addTemplate("tmplActivityInfoBubble", "<div class=\"indexLine\" data-bind=\"style: {bottom: (start() + (duration() / 2)) + 'px', width: (leftPosition() - 60) + 'px', background: darkColor()}\"></div>\
-<div class=\"infoBubble\" data-bind=\"click: select, css: {infoBubbleSelected: selected(), infoBubbleUnselected: !selected()}, style: {bottom: (start() + (duration() / 2) - 14) + 'px', left: leftPosition() + 'px', backgroundColor: lightColor(), borderColor: darkColor()}\">\
+<div class=\"infoBubble\" data-bind=\"click: select, css: {infoBubbleSelected: selected(), infoBubbleUnselected: !selected()}, style: {bottom: (start() + (duration() / 2) - 14) + 'px', left: leftPosition() + 'px', backgroundColor: 'rgba(' + lightColor() + ', ' + (selected() ? '0.9' : '0.75') + ')', borderColor: darkColor()}\">\
 	<div style=\"padding: 5px\">\
 		<!-- ko template: { name: contentTemplateName(), afterRender: contentRendered.bind($data) } --><!-- /ko -->\
 		<!-- ko if: selected() && showNotes && activity.note() -->\

@@ -9,7 +9,7 @@
 			this.lullingDuration = ko.observable<number>(dur);
 
 			this.darkColor("#4A9E78");
-			this.lightColor("#DEECE6");
+            this.lightColor("222, 236, 230");//"#DEECE6");
 		}
 
         protected _getActionMenuButtons(): string[] {
