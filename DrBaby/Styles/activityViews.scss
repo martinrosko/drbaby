@@ -1,0 +1,109 @@
+﻿$activityColorDark: black;
+$activityColorLight: white;
+$feedingColorDark: navy;
+$feedingColorLight: #EEEEF8;
+$sleepColorDark: #4A9E78;
+$sleepColorLight: #DEECE6;
+$medicineColorDark: red;
+$medicineColorLight: white;
+$eventColorDark: #1d516b;
+$eventColorLight: #e1f0f9;
+$peeColorDark: orange;
+$peeColorLight: #f9f5c7;
+$poopColorDark: brown;
+$poopColorLight: #ffd799;
+
+%activityTimeLine {
+    position: absolute;
+    left: 45px;
+    width: 15px;
+    opacity: 0.65;
+}
+
+@mixin lightColorTransparent($rgb, $opacity) {
+    background: rgba($rgb, $opacity);
+}
+
+@mixin activityStyle($colorDark, $colorLight, $minWidth: auto) {
+    %darkBackground {
+        background: $colorDark;
+    }
+
+    .timeLine {
+        @extend %activityTimeLine;
+        @extend %darkBackground;
+    }
+
+    .indexLine {
+        @extend %darkBackground;
+    }
+
+    .darkBorderColor {
+        border-color: $colorDark;
+    }
+
+    .background {
+        background: $colorLight;
+        @include lightColorTransparent($colorLight, 0.75);
+        border-color: $colorDark;
+    }
+
+    .background.selected {
+        @include lightColorTransparent($colorLight, 0.9);
+    }
+
+    .rightBorder {
+        @extend %darkBackground;
+        color: $colorLight;
+        width: 30px;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    .infoBubble {
+        min-width: $minWidth;
+    }
+}
+
+.activityView {
+    @include activityStyle($activityColorDark, $activityColorLight);
+}
+.feedingView {
+    @include activityStyle($feedingColorDark, $feedingColorLight, 80px);
+}
+.sleepView {
+    @include activityStyle($sleepColorDark, $sleepColorLight, 100px);
+}
+.eventView {
+    @include activityStyle($eventColorDark, $eventColorLight);
+}
+.medicineView {
+    @include activityStyle($medicineColorDark, $medicineColorLight);
+}
+.peeView {
+    @include activityStyle($peeColorDark, $peeColorLight);
+}
+.poopView {
+    @include activityStyle($poopColorDark, $poopColorLight);
+}
+
+.infoBubble {
+    box-sizing: border-box;
+    position: absolute;
+    z-index: 2;
+    border-radius: 15px;
+    border-style: solid;
+    border-width: 2px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    box-shadow: 3px 3px 6px 2px #314240;
+    height: 30px;
+}
+
+.infoBubble.selected {
+    height: auto;
+    min-height: 30px;
+    z-index: 10;
+}

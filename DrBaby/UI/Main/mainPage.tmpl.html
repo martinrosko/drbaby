@@ -1,0 +1,114 @@
+﻿    <script type="text/html" id="tmplMainPage">
+        <div class="mainPage">           
+            <!-- ko if: bShowHeader --><div style="box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #ECECEC; color: #253344; font-weight: bold">                
+                <span data-bind="text: DrBaby.Application.child.name" /> - <span data-bind="text: DrBaby.Application.child.daysSinceBirth" />.den<br />
+            </div>
+            <!-- /ko -->
+            <div class="clockPanel">               
+                <!-- ko if: !activeFeeding() && !activeSleep() -->
+                <span class="clockBig shadowBig" data-bind="text: actualTime" />
+                <!-- /ko -->
+                <!-- ko if: activeFeeding() || activeSleep() -->
+                <span class="clockMedium shadowMedium" data-bind="text: actualTime" />
+                <!-- /ko -->
+            </div>
+            <!-- ko if: !activeFeeding() && !activeSleep() -->
+            <div class="actionPanel">                
+                <a class="button small" style="flex: 1 1 47%" data-bind="click: startNewFeeding" href="#">
+                    <span data-bind="text: feedingActionLabel" /><br />
+                    <span class="clockSmall" data-bind="text: lastFedLabel" />
+                </a>
+                <a class="button small" style="flex: 0 1 6%; font-size: 50px; margin: 0px 10px; padding-top: 4px" data-bind="click: addEvent" href="#">                  
+                    +
+                </a>
+                <a class="button small" style="flex: 1 1 47%" data-bind="click: startNewSleep" href="#">                    
+                    Sleep<br />
+                    <span class="clockSmall" data-bind="text: lastSleepLabel" />
+                </a>
+            </div>
+            <!-- /ko -->
+            <!-- ko if: activeSleep() -->
+            <div class="activityPanel" data-bind="style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column' }">
+                <!-- ko if: !activeSleep().startedOn() -->
+                <div style="flex-grow: 1">
+                    Falling asleep<br />
+                    <span class="clockBig" data-bind="text: fallingAsleepDurationLabel" />
+                </div>
+                <div data-bind="style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%' }">
+                    <a class="button big" data-bind="click: fallAsleep.bind($data, new Date())" href="#">
+                        Sleeps
+                    </a>
+                    <a class="button big" data-bind="click: cancelActiveSleep" href="#">
+                        Wont sleep
+                    </a>
+                </div>
+                <!-- /ko -->
+                <!-- ko if: activeSleep().startedOn() -->
+                <div style="flex-grow: 1">                    
+                    Sleeping<br />
+                    <span class="clockBig" data-bind="text: activeSleepDurationLabel" />
+                </div>
+                <div data-bind="style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%' }">
+                    <a class="button big" data-bind="click: finishActiveSleep" href="#">
+                        Waking up
+                    </a>
+                    <a class="button big" data-bind="click: fallAsleep.bind($data, undefined)" href="#">
+                        Not sleeping
+                    </a>
+                </div>
+                <!-- /ko -->
+            </div>
+            <!-- /ko -->
+            <!-- ko if: activeFeeding() && !activeSleep() -->
+            <div class="activityPanel" data-bind="style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column' }">
+                <div style="flex-grow: 1">
+                    Feeding<br />
+                    <span class="clockBig" data-bind="text: activeFeedingDurationLabel" />
+                </div>
+                <div data-bind="style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%' }">
+                    <a class="button big" data-bind="click: finishActiveFeeding" href="#">
+                        Finished
+                    </a>
+                    <a class="button big" data-bind="click: cancelActiveFeeding" href="#">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+            <!-- /ko -->
+            <!-- ko with: timeLine -->
+            <div style="position: relative; width: 100%; overflow: hidden">                
+                <!-- ko foreach: slots -->
+                <div style="position: relative; box-sizing: border-box; border-bottom: dotted 1px #aaaaaa; height: 30px; width: 100%" data-bind="style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }">                   
+                    <span style="position: absolute; left: 2px; bottom: 2px; font-size: 10px; color: silver" data-bind="text: hourLabel + ':30 ' " />
+                    <span style="position: absolute; right: 2px; bottom: 2px; font-size: 10px; color: silver" data-bind="text: dayLabel" />
+                </div>
+                <div style="position: relative; box-sizing: border-box; height: 30px; width: 100%" data-bind="style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' , borderBottom: hour === 0 ? 'solid 2px black' : 'dashed 1px #555555' }">                   
+                    <span style="position: absolute; left: 2px; bottom: 2px" data-bind="text: hourLabel + ':00 ' " />
+                    <!-- ko if: hour === 0 -->
+                    <div style="position: absolute; left: 0px; bottom: 2px; width: 100%; text-align: center">                      
+                        <span style="color: silver" data-bind="text: time.format('dddd D.M.YYYY')" />
+                    </div>
+                    <!-- /ko -->
+                </div>
+                <!-- /ko -->
+                <!-- ko if: currentTime() >= 0 -->
+                <div style="position: absolute; padding: 0px; box-sizing: border-box; border-bottom: dotted 2px red; height: 2px; left: 0px; width: 100%" data-bind="style: {bottom: currentTime() + 'px' }" />
+                <!-- /ko -->
+                <!-- ko foreach: activities -->
+                <!-- ko template: { name: 'tmplActivityTimeLine' } --><!-- /ko -->
+                <!-- ko if: showInfoBubble -->
+                <!-- ko template: { name: 'tmplActivityInfoBubble' } --><!-- /ko -->
+                <!-- /ko -->
+                <!-- /ko -->
+            </div>
+            <!-- /ko -->
+            <a class="button" style="width: 100%; border-bottom-width: 1px" data-bind="click: loadMore">              
+                <!-- ko if: !loadingMore() -->
+                <span>Load more</span>
+                <!-- /ko -->
+                <!-- ko if: loadingMore() -->
+                <img src="Images/loading_small.gif" /> <span>Loading...</span>
+                <!-- /ko -->
+            </a>
+        </div>
+    </script>

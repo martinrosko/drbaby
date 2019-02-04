@@ -8,8 +8,9 @@
 			var dur = moment(activity.startedOn()).diff(moment((<Model.Sleep>activity).lullingStartedOn()), "minutes");
 			this.lullingDuration = ko.observable<number>(dur);
 
-			this.darkColor("#4A9E78");
-            this.lightColor("222, 236, 230");//"#DEECE6");
+            this.m_column = 1;
+            this.m_selectedWidth = 210;
+            this.className("sleepView");
 		}
 
         protected _getActionMenuButtons(): string[] {
@@ -32,30 +33,8 @@
             }, this, "Breast", false, "Cancel", ["Cot", "Scarf", "Carrier", "Stroller", "Couch", "Bed", "Arms", "Car", "Other"]);
         }
 
-		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {
-			if (isSelected)
-				return "tmplSleepViewSelected";
-
-			return isWide ? "tmplSleepViewWide" : "tmplSleepView";
-		}
-
-		protected _getLeftPosition(isWide: boolean): number {
-			return isWide ? 270 : 160;
-		}
+        protected getBubbleContentTemplateName(): string {
+            return "tmplSleepView";
+        }
 	}
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplSleepView", "<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.SleepPlace[activity.place()]\" /> <span data-bind=\"text: duration()\" />min\
-<!-- ko if: activity.note() --><img style=\"width: 10px\" src=\"Images/Note.png\" /><!-- /ko -->");
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplSleepViewWide", "<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.SleepPlace[activity.place()]\" /> <span data-bind=\"text: duration()\" />minut \
-<span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'\" />\
-<!-- ko if: activity.note() --><img style=\"width: 15px\" src=\"Images/Note.png\" /><!-- /ko -->");
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplSleepViewSelected", "<span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.SleepPlace[activity.place()]\" /> <span data-bind=\"text: duration()\" />minut \
-<span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'\" /><br />\
-<span style=\"font-size: 10px\" data-bind=\"text: 'po: ' + previousBeforeLabel() \" />\
-<!-- ko if: activity.quality() !== undefined -->\
-	<span style=\"font-size: 10px\" data-bind=\"text: 'Quality: ' + DrBaby.Model.SleepQuality[activity.quality()]\" />\
-<!-- /ko -->");	
-
 }

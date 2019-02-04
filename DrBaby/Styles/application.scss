@@ -1,0 +1,238 @@
+﻿$pageBackground: #8db7ce;
+
+/*$button-color: #ececec;
+$button-background-color1: #0f0b15;
+$button-background-color2: #3F6AA0;
+$button-border-color: #0e1423;
+$button-text-shadow-color: #030406;*/
+
+$button-color: #030406;
+$button-background-color1: white;
+$button-background-color2: #92af49; //#dac966; //#cde5f6;
+$button-border-color: #0e1423;
+$button-text-shadow-color: silver;
+
+$skyColor: #4c888e;
+
+$panel1-background: #F5FFED; //white; //#0e1423;
+$panel1-color: black;
+$panel1-shadow-color: $skyColor;
+
+$panel2-background: #dbeaca; //#57799C;
+$panel2-color: #4e673f;
+
+@mixin small-shadow($color) {
+    text-shadow: 1px 2px 1px $color;
+}
+
+@mixin medium-shadow($color) {
+    text-shadow: 2px 2px 3px $color;
+}
+
+@mixin big-shadow($color) {
+    text-shadow: 2px 3px 5px $color;
+}
+
+@mixin button-linear-gradient($color1, $color2) {
+    background: $color1;
+    background: -webkit-gradient(linear, 0 0, 0 bottom, from($color1), to($color2));
+    background: -moz-linear-gradient($color1, $color2);
+    background: linear-gradient($color1, $color2);
+}
+
+@mixin button-border($color) {
+    border: solid 1px $color;
+    border-bottom: solid 3px $color;
+}
+
+@mixin button-text($color, $shadowColor) {
+    color: $color;
+    @include small-shadow($shadowColor);
+}
+
+body {
+    margin: 0px;
+    padding: 0px;
+    font-size: 14px;
+    font-family: 'Segoe UI SemiLight', sans-serif;
+    /*background: #8db7ce;*/
+}
+
+textarea {
+    font-size: 14px;
+    font-family: 'Segoe UI SemiLight', sans-serif;
+    border: 0px;
+}
+
+div {
+    box-sizing: border-box;
+}
+
+div.main {
+    text-align: center;
+}
+
+div.mainPage {
+    background: $pageBackground;
+
+    div.clockPanel {
+        border-bottom: solid 1px black;
+        width: 100%;
+        text-align: center;
+        font-size: 14px;
+        padding: 3px;
+        background: $panel1-background;
+        color: $panel1-color;
+
+        .shadowBig {
+            @include big-shadow($panel1-shadow-color);
+        }
+
+        .shadowMedium {
+            @include medium-shadow($panel1-shadow-color);
+        }
+    }
+
+    div.actionPanel {
+        padding: 20px 10px;
+        border-bottom: solid 1px black;
+        display: flex;
+        flex-direction: row;
+        background: $panel2-background;
+    }
+
+    div.activityPanel {
+        padding: 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        background: $panel2-background;
+        color: $panel2-color;
+
+        .clockBig {
+            @include medium-shadow(black);
+        }
+    }
+}
+
+
+%clock {
+    font-weight: bold;
+}
+
+.clockBig {
+    @extend %clock;
+    font-size: 96px;
+}
+
+.clockMedium {
+    @extend %clock;
+    font-size: 48px;
+}
+
+.clockSmall {
+    @extend %clock;
+    font-size: 32px;
+}
+
+
+a.button {
+    @include button-linear-gradient($button-background-color1, $button-background-color2);
+    @include button-border($button-border-color);
+    @include button-text($button-color, $button-text-shadow-color);
+    display: inline-block;
+    font-weight: bold;
+    padding: 10px;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+a.button.big {
+    height: 50px;
+    padding-top: 25px;
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    min-width: 230px;
+    width: 80%;
+}
+
+/*a.button:hover {
+    background: #e4e4e4;
+    background: -webkit-gradient(linear, 0 0, 0 bottom, from(#e4e4e4), to(#ededed));
+    background: -moz-linear-gradient(#e4e4e4, #ededed);
+    background: linear-gradient(#e4e4e4, #ededed);
+    border: solid 1px #c2c2c2;
+    border-bottom: solid 3px #b2b1b1;
+    box-shadow: inset 0 0 0 1px #efefef;
+}*/
+
+a.button:active {
+    background: #dfdfdf;
+    background: -webkit-gradient(linear, 0 0, 0 bottom, from(#dfdfdf), to(#e3e3e3));
+    background: -moz-linear-gradient(#dfdfdf, #e3e3e3);
+    background: linear-gradient(#dfdfdf, #e3e3e3);
+    border: solid 1px #959595;
+    box-shadow: inset 0 10px 15px 0 #c4c4c4;
+    top: 2px;
+}
+
+.action {
+    background: #4e5c6d;
+    color: white;
+    border: solid 2px black;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.indexLine {
+    position: absolute;
+    left: 60px;
+    height: 2px;
+    z-index: 1;
+}
+
+
+.statsBanner {
+    padding: 5px;
+    border-bottom: solid 1px black;
+    min-height: 60px;
+    width: 100%;
+    font-weight: bold;
+    font-size: 16px;
+    background: #e3fcfc;
+    text-align: center;
+    background-position: center;
+    background-size: cover;
+
+    .detailBar {
+        display: flex;
+        flex-direction: row;
+
+        .detailCell {
+            flex-grow: 1;
+            font-size: 12px;
+            font-weight: normal;
+        }
+    }
+}
+
+.timeLine {
+    position: relative;
+    height: 20px;
+    width: 100%;
+    font-weight: bold;
+    overflow: hidden;
+
+    .timeLineItem {
+        position: absolute;
+        top: 0;
+        height: 20px;
+        opacity: 0.65
+    }
+}

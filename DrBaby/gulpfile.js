@@ -1,4 +1,4 @@
-﻿/// <binding ProjectOpened='sass:watch' />
+/// <binding BeforeBuild='mergeHtmlTemplates, sass' ProjectOpened='sass:watch, mergeHtmlTemplates:watch' />
 /*
 This file is the main entry point for defining Gulp tasks and using Gulp plugins.
 Click here to learn more. https://go.microsoft.com/fwlink/?LinkId=518007
@@ -15,6 +15,7 @@ gulp.task('default', ['sass']);
 
 gulp.task('sass', function (done) {
     gulp.src('./Styles/**/*.scss')
+        .pipe(concat('application.css'))
         .pipe(sass())
         .on('error', sass.logError)
         .pipe(gulp.dest('./Styles/'))
@@ -36,8 +37,12 @@ gulp.task('mergeHtmlTemplates', function (done) {
         .on('data', function (file) {
             gulp.src("./index-template.html")
                 .pipe(replace("<!-- Template Placeholder -->", file.contents.toString()))
-                .pipe(rename({ extname: ".min.css" }))
+                .pipe(rename("index.html"))
                 .pipe(gulp.dest('./'))
                 .on('end', done);
         });
-})
+});
+
+gulp.task('mergeHtmlTemplates:watch', function () {
+    gulp.watch('./**/*.tmpl.html', ['mergeHtmlTemplates']);
+});

@@ -379,7 +379,20 @@
 			this.hour = time.get("hour");
 			this.isDaySlot = (this.hour >= 7 && this.hour < 19);
 		}
-	}
+    }
+
+    export class ActivityColumn {
+        public left: number;
+        public width: number;
+        public bUseWideTemplate: boolean;
+
+        public constructor(l: number, w: number, wide: boolean) {
+            this.left = l;
+            this.width = w;
+            this.bUseWideTemplate = wide;
+
+        }
+    }
 
 	export class TimeLine {
 		public mmtFrom: Moment;
@@ -387,7 +400,8 @@
 		public activities: KnockoutObservableArray<ActivityView>;
 		public slots: KnockoutObservableArray<TimeLineHour>;
 		public page: MainPage;
-		public currentTime: KnockoutObservable<number>;
+        public currentTime: KnockoutObservable<number>;
+        public activityColumns: ActivityColumn[];
 
 		constructor(page: MainPage, mmtFrom: Moment, mmtTo: Moment) {
 			this.page = page;
@@ -398,7 +412,9 @@
 			this.slots = ko.observableArray<TimeLineHour>([]);
 			this.setRange(mmtFrom, mmtTo)
 
-			this.currentTime = ko.observable<number>(0);
+            this.currentTime = ko.observable<number>(0);
+            this._updateActivityColumns();
+            AppForm.instance.size.width.subscribe(_ => this._updateActivityColumns(), this);
 
 			Application.now.subscribe(value => {
 				if (this.mmtTo.diff(moment(), "minutes") <= 60)
@@ -406,7 +422,45 @@
 
 				this._updateCurrentTime();
 			}, this);
-		}
+        }
+
+        private _updateActivityColumns(): void {
+            var width = AppForm.instance.size.width();
+
+            if (width < 520) {
+                this.activityColumns = [new ActivityColumn(70, 80, false),
+                new ActivityColumn(150, 120, false),
+                new ActivityColumn(270, 30, false)];
+
+                if (width >= 330)
+                    this.activityColumns.push(new ActivityColumn(300, 30, false));
+                if (width >= 360)
+                    this.activityColumns.push(new ActivityColumn(330, -240, false));
+            }
+            else {
+                this.activityColumns = [new ActivityColumn(70, 180, true),
+                    new ActivityColumn(250, 180, true),
+                    new ActivityColumn(430, 30, false),
+                    new ActivityColumn(460, 30, false),
+                    new ActivityColumn(490, -240, false)];
+
+                if (width >= 590) {
+                    this.activityColumns[3].bUseWideTemplate = true;
+                    this.activityColumns[3].width = 100;
+                    this.activityColumns[4].left += 70;
+                }
+                if (width >= 660) {
+                    this.activityColumns[2].bUseWideTemplate = true;
+                    this.activityColumns[2].width = 100;
+                    this.activityColumns[3].left += 70;
+                    this.activityColumns[4].left += 70;
+                }
+                if (width >= 730) {
+                    this.activityColumns[4].bUseWideTemplate = true;
+                }
+            }
+            this.activities().forEach(a => a.updateInfoBubble());
+        }
 
 		private _updateCurrentTime(): void {
 			var mmtBaseLine = moment(this.mmtFrom).startOf("hour");
@@ -497,7 +551,8 @@
                     break;
                 }
             }
-			this.activities.push(activityView);
+            activityView.updateInfoBubble();
+            this.activities.push(activityView);
 		}
 
 		public removeActivity(activity: Model.Activity): void {
@@ -513,114 +568,4 @@
             }
 		}
 	}
-
-	//style=\"background: #d3ffd6\" 
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplMainPage", "<div style=\"background: #8db7ce\">\
-	<!-- ko if: bShowHeader --><div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #ECECEC; color: #253344; font-weight: bold\">\
-		<span data-bind=\"text: DrBaby.Application.child.name\" /> - <span data-bind=\"text: DrBaby.Application.child.daysSinceBirth\" />.den<br />\
-	</div>\
-	<!-- /ko -->\
-	<div style=\"box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #0e1423; color: #ffffff\">\
-	<span data-bind=\"text: actualTime, css: {clockBig: !activeFeeding() && !activeSleep(), whiteClockSkyShadow: !activeFeeding() && !activeSleep(), clockMedium: activeFeeding() || activeSleep(), whiteClockSkyShadowMedium: activeFeeding() || activeSleep()}\" />\
-	</div>\
-	<!-- ko if: !activeFeeding() && !activeSleep() -->\
-	<div style=\"padding: 20px 10px; display: flex; flex-direction: row; background: #57799C; border-bottom: solid 1px black\">\
-		<a class=\"button blue_alt buttonSmall\" style=\"flex: 1 1 47%\" data-bind=\"click: startNewFeeding\" href=\"#\">\
-			<span data-bind=\"text: feedingActionLabel\" /><br />\
-			<span class=\"clockSmall\" data-bind=\"text: lastFedLabel\" />\
-		</a>\
-		<a class=\"button blue_alt buttonSmall\" style=\"flex: 0 1 6%; font-size: 50px; margin: 0px 10px; padding-top: 4px\" data-bind=\"click: addEvent\" href=\"#\">\
-			+\
-		</a>\
-		<a class=\"button blue_alt buttonSmall\" style=\"flex: 1 1 47%\" data-bind=\"click: startNewSleep\" href=\"#\">\
-			Spinkat<br />\
-			<span class=\"clockSmall\" data-bind=\"text: lastSleepLabel\" />\
-		</a>\
-	</div>\
-	<!-- /ko -->\
-	<!-- ko if: activeSleep() -->\
-	<div style=\"padding: 5px; display: flex; justify-content: center; align-items: center; text-align: center; background: #57799C\" data-bind=\"style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column'}\">\
-		<!-- ko if: !activeSleep().startedOn() -->\
-		<div style=\"flex-grow: 1\">\
-			Zaspava<br />\
-			<span class=\"clockBig whiteClockBlackShadow\" data-bind=\"text: fallingAsleepDurationLabel\" />\
-		</div>\
-		<div data-bind=\"style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%'}\">\
-			<a class=\"button blue_alt buttonBig\" data-bind=\"click: fallAsleep.bind($data, new Date())\" href=\"#\">\
-				Zaspal\
-			</a>\
-			<a class=\"button blue_alt buttonBig\" data-bind=\"click: cancelActiveSleep\" href=\"#\">\
-				Nebude spat\
-			</a>\
-		</div>\
-		<!-- /ko -->\
-		<!-- ko if: activeSleep().startedOn() -->\
-		<div style=\"flex-grow: 1\">\
-			Spinka<br />\
-			<span class=\"clockBig whiteClockBlackShadow\" data-bind=\"text: activeSleepDurationLabel\" />\
-		</div>\
-		<div data-bind=\"style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%'}\">\
-			<a class=\"button blue_alt buttonBig\" data-bind=\"click: finishActiveSleep\" href=\"#\">\
-				Vstava\
-			</a>\
-			<a class=\"button blue_alt buttonBig\" data-bind=\"click: fallAsleep.bind($data, undefined)\" href=\"#\">\
-				Este nezaspal\
-			</a>\
-		</div>\
-		<!-- /ko -->\
-	</div>\
-	<!-- /ko -->\
-	<!-- ko if: activeFeeding() && !activeSleep() -->\
-	<div style=\"padding: 5px; display: flex; justify-content: center; align-items: center; text-align: center; background: #57799C\" data-bind=\"style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column'}\">\
-		<div style=\"flex-grow: 1\">\
-			Papá<br />\
-			<span class=\"clockBig whiteClockBlackShadow\" data-bind=\"text: activeFeedingDurationLabel\" />\
-		</div>\
-		<div data-bind=\"style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%'}\">\
-			<a class=\"button blue_alt buttonBig\" data-bind=\"click: finishActiveFeeding\" href=\"#\">\
-				Dopapal\
-			</a>\
-			<a class=\"button blue_alt buttonBig\" data-bind=\"click: cancelActiveFeeding\" href=\"#\">\
-				Zrusit\
-			</a>\
-		</div>\
-	</div>\
-	<!-- /ko -->\
-	<!-- ko with: timeLine -->\
-		<div style=\"position: relative; width: 100%; overflow: hidden\">\
-			<!-- ko foreach: slots -->\
-				<div style=\"position: relative; box-sizing: border-box; border-bottom: dotted 1px #aaaaaa; height: 30px; width: 100%\" data-bind=\"style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }\">\
-					<span style=\"position: absolute; left: 2px; bottom: 2px; font-size: 10px; color: silver\" data-bind=\"text: hourLabel + ':30 '\" />\
-					<span style=\"position: absolute; right: 2px; bottom: 2px; font-size: 10px; color: silver\" data-bind=\"text: dayLabel\" />\
-				</div>\
-				<div style=\"position: relative; box-sizing: border-box; height: 30px; width: 100%\" data-bind=\"style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4', borderBottom: hour === 0 ? 'solid 2px black' : 'dashed 1px #555555' }\">\
-					<span style=\"position: absolute; left: 2px; bottom: 2px\" data-bind=\"text: hourLabel + ':00 '\" />\
-					<!-- ko if: hour === 0 -->\
-						<div style=\"position: absolute; left: 0px; bottom: 2px; width: 100%; text-align: center\">\
-							<span style=\"color: silver\" data-bind=\"text: time.format('dddd D.M.YYYY')\" />\
-						</div>\
-					<!-- /ko -->\
-				</div>\
-			<!-- /ko -->\
-			<!-- ko if: currentTime() >= 0 -->\
-				<div style=\"position: absolute; padding: 0px; box-sizing: border-box; border-bottom: dotted 2px red; height: 2px; left: 0px; width: 100%\" data-bind=\"style: {bottom: currentTime() + 'px'}\" />\
-			<!-- /ko -->\
-			<!-- ko foreach: activities -->\
-				<!-- ko template: { name: 'tmplActivityTimeLine' } --><!-- /ko -->\
-				<!-- ko if: showInfoBubble -->\
-					<!-- ko template: { name: 'tmplActivityInfoBubble' } --><!-- /ko -->\
-				<!-- /ko -->\
-			<!-- /ko -->\
-		</div>\
-	<!-- /ko -->\
-	<div style=\"box-sizing: border-box; border-bottom: solid 1px black; border-top: solid 1px black; width: 100%; height: 40px; text-align: center; font-size: 14px; padding: 10px; background: #eeeeee\" data-bind=\"click: loadMore\">\
-		<!-- ko if: !loadingMore() -->\
-		<span>Load more</span>\
-		<!-- /ko -->\
-		<!-- ko if: loadingMore() -->\
-		<img src=\"Images/loading_small.gif\" /> <span>Loading...</span>\
-		<!-- /ko -->\
-	</div>\
-</div>");
 }

@@ -1,0 +1,23 @@
+﻿    <script type="text/html" id="tmplSleepViewWide">
+        <span style="font-weight: bold" data-bind="text: DrBaby.Model.SleepPlace[activity.place()]" /> <span data-bind="text: duration()" />minut 
+        <span style="font-size: 10px" data-bind="text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'" />
+        <!-- ko if: activity.note() -->
+            <img style="width: 15px" src="Images/Note.png" />
+        <!-- /ko -->    
+    </script>
+
+    <script type="text/html" id="tmplSleepView">
+        <span style="font-weight: bold" data-bind="text: DrBaby.Model.SleepPlace[activity.place()]" /> <span data-bind="text: duration()" />min
+        <!-- ko if: activity.note() -->
+            <img style="width: 10px" src="Images/Note.png" />
+        <!-- /ko -->
+    </script>
+
+    <script type="text/html" id="tmplSleepViewSelected">
+        <span style="font-weight: bold" data-bind="text: DrBaby.Model.SleepPlace[activity.place()]" /> <span data-bind="text: duration()" />minut 
+        <span style="font-size: 10px" data-bind="text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'" /><br />
+        <span style="font-size: 10px" data-bind="text: 'po: ' + previousBeforeLabel() " />
+        <!-- ko if: activity.quality() !== undefined -->
+	        <span style="font-size: 10px" data-bind="text: 'Quality: ' + DrBaby.Model.SleepQuality[activity.quality()]" />
+        <!-- /ko -->    
+    </script>

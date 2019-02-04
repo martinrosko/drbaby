@@ -23,6 +23,7 @@
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="gulpfile.js" />
     <Content Include="HomeReplacement.html" />
     <Content Include="Images\Diaper.png" />
     <Content Include="Images\Diary.png" />
@@ -35,6 +36,7 @@
     <Content Include="Images\Poop.png" />
     <Content Include="Images\Sleep.png" />
     <Content Include="Images\Statistics.png" />
+    <Content Include="index-template.html" />
     <Content Include="index-release.html" />
     <Content Include="Publish\publish-mcrm.js" />
     <Content Include="Styles\application.css" />
@@ -48,6 +50,14 @@
     <Content Include="Libraries\knockout_debug.js" />
     <Content Include="Libraries\moment_min.js" />
     <Content Include="Resco\Controls\Styles\controls.css" />
+    <Content Include="UI\Main\eventView.tmpl.html" />
+    <Content Include="UI\Main\medicineView.tmpl.html" />
+    <Content Include="UI\Main\sleepView.tmpl.html" />
+    <Content Include="UI\Main\diaperView.tmpl.html" />
+    <Content Include="UI\Main\mainPage.tmpl.html" />
+    <Content Include="UI\Main\feedingView.tmpl.html" />
+    <Content Include="UI\Main\activityView.tmpl.html" />
+    <Content Include="UI\Note\notePage.tmpl.html" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
@@ -113,6 +123,9 @@
   <ItemGroup>
     <Content Include="Publish\generateMinimizeBat.js" />
     <Content Include="Publish\publish-mcmr.bat" />
+    <Content Include="Styles\application.scss" />
+    <Content Include="package.json" />
+    <Content Include="Styles\activityViews.scss" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

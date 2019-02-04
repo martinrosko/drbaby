@@ -3,7 +3,7 @@
 	export class GlobalTimer {
 		public fn: (context: any) => void;
 		public context: any;
-	}
+    }
 
 	export class Application {
 		static log: Resco.Logger;
@@ -11,7 +11,7 @@
 		static userInfo: UserInfo;
 		static now: KnockoutObservable<number> = ko.observable<number>(0);
 		static actualHour: KnockoutComputed<number>;
-		static wideScreen: KnockoutObservable<boolean>;
+        static wideScreen: KnockoutObservable<boolean>;
 		static child: Model.Child;
 
 		public static globalTimers: GlobalTimer[] = [];
@@ -58,17 +58,18 @@
 					throw new Resco.UnauthorizedAccessException("Please log in to access the content of this web application.", ex);
 				}
 
-				Application.wideScreen = ko.observable<boolean>(UI.AppForm.instance.size.width() > 640);
+                Application.wideScreen = ko.observable<boolean>(UI.AppForm.instance.size.width() >= 480);
 				$(window).resize(function () {
-					UI.AppForm.instance.resize();
-					Application.wideScreen(UI.AppForm.instance.size.width() > 640);
+                    UI.AppForm.instance.resize();
+                    Application.wideScreen(UI.AppForm.instance.size.width() >= 480)
 				});
 				$(window).on({
 					"orientationchange": () => {
 						UI.AppForm.instance.resize();
-						Application.wideScreen(UI.AppForm.instance.size.width() > 640);
+                        Application.wideScreen(UI.AppForm.instance.size.width() >= 480)
 					}
-				});
+                });
+
 				$(document).prop("title", "DrBaby v" + Application.versionLabel);
 				Application.log.appendLine("DrBaby v" + Application.versionLabel);
 
@@ -107,7 +108,7 @@
 			catch (ex) {
 				Application.LogException(ex);
 			}
-		}
+        }
 
 		public clearTimer(timer: GlobalTimer): boolean {
 			let timerIndex = Application.globalTimers.indexOf(timer);

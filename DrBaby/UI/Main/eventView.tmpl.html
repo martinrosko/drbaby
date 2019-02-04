@@ -1,0 +1,19 @@
+﻿    <script type="text/html" id="tmplEventViewWide">
+        <!-- ko template: { name: 'tmplEventViewSelected' } --><!-- /ko -->
+    </script>
+
+    <script type="text/html" id="tmplEventView">
+        <!-- ko if: activity.note() -->
+	        <!-- ko if: activity.note().b64image() -->
+		        <img style="max-height: 24px" data-bind="attr: {src: 'data:image/png;base64, ' + activity.note().b64image()}"/>
+	        <!-- /ko -->
+	        <!-- ko if: !activity.note().b64image() -->
+		        <img src="Images/Note.png" style="width: 15px; display: inline-block" />
+	        <!-- /ko -->
+            <span data-bind="text: activity.note().text"></span>
+        <!-- /ko -->    
+    </script>
+
+    <script type="text/html" id="tmplEventViewSelected">
+        <!-- ko template: { name: 'tmplEventView' } --><!-- /ko -->
+    </script>

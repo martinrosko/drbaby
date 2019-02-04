@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -75,9 +75,304 @@
     <script src="application.js" type="text/javascript"></script>
 </head>
 <body style="background: #8db7ce">
-	<!-- ko template: { name: 'tmplRescoAppForm' } --><!-- /ko -->
-	<script>
-		DrBaby.Application.run();
-	</script>
+<!-- BEGIN: Knockout Templates -->
+    <script type="text/html" id="tmplActivityInfoBubble">
+        <div data-bind="attr: {class: className()}">
+            <div class="indexLine" data-bind="style: {bottom: (start() + (duration() / 2)) + 'px', width: (bounds.left() - 60) + 'px'}"></div>
+            <div class="infoBubble background" data-bind="click: select, css: {selected: selected()}, style: {bottom: (start() + (duration() / 2) - 14) + 'px', left: bounds.left() + 'px', width: (bounds.width() >= 0 ? bounds.width() + 'px' : 'auto'), maxWidth: (bounds.width() < 0 ? (-1 * bounds.width()) + 'px' : 'auto')}">
+                <div style="padding: 5px; width: 100%">
+                    <!-- ko template: { name: contentTemplateName(), afterRender: contentRendered.bind($data) } --><!-- /ko -->
+                    <!-- ko if: selected() && showNotes && activity.note() -->
+                    <div style="font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; cursor: pointer" data-bind="click: editNote">
+                        <img style="width: 12px" src="Images/Note.png" /> <span style="font-style: italic" data-bind="text: activity.note().text()" />
+                    </div>
+                    <!-- /ko -->
+                </div>
+                <!-- ko if: selected() -->
+                <div class="rightBorder" data-bind="click: showActionMenu, clickBubble: false">...</div>
+                <!-- /ko -->
+            </div>
+        </div>
+    </script>
+
+    <script type="text/html" id="tmplActivityTimeLine">
+        <div data-bind="attr: {class: className()}">
+            <div class="timeLine" data-bind="style: {bottom: start() + 'px' , height: duration() + 'px'}"></div>
+        </div>
+    </script>
+
+    <script type="text/html" id="tmplBaseActivityView">
+    </script>
+
+    <script type="text/html" id="tmplDiaperViewWide">
+        <img style="width: 15px" data-bind="attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}" /> 
+        <span style="font-weight: bold" data-bind="text: DrBaby.Model.DiaperAmount[activity.amount()]" /> 
+        <span style="font-size: 10px" data-bind="text: '(' + moment(activity.startedOn()).format('HH:mm') + ')'" />
+    </script>
+
+    <script type="text/html" id="tmplDiaperView">
+        <img style="width: 15px" data-bind="attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}" />
+    </script>
+
+    <script type="text/html" id="tmplDiaperViewSelected">
+        <img style="width: 15px" data-bind="attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}" />
+        <span style="font-size: 10px; font-weight: bold" data-bind="text: DrBaby.Model.DiaperAmount[activity.amount()]" /><br />
+	    <span style="font-size: 10px" data-bind="text: moment(activity.startedOn()).format('HH:mm')" />
+    </script>
+
+    <script type="text/html" id="tmplEventViewWide">
+        <!-- ko template: { name: 'tmplEventViewSelected' } --><!-- /ko -->
+    </script>
+
+    <script type="text/html" id="tmplEventView">
+        <!-- ko if: activity.note() -->
+	        <!-- ko if: activity.note().b64image() -->
+		        <img style="max-height: 24px" data-bind="attr: {src: 'data:image/png;base64, ' + activity.note().b64image()}"/>
+	        <!-- /ko -->
+	        <!-- ko if: !activity.note().b64image() -->
+		        <img src="Images/Note.png" style="width: 15px; display: inline-block" />
+	        <!-- /ko -->
+            <span data-bind="text: activity.note().text"></span>
+        <!-- /ko -->    
+    </script>
+
+    <script type="text/html" id="tmplEventViewSelected">
+        <!-- ko template: { name: 'tmplEventView' } --><!-- /ko -->
+    </script>
+
+    <script type="text/html" id="tmplFeedingViewWide">
+        <!-- ko if: activity.breast() === DrBaby.Model.Breast.None && activity.meals().length > 0 -->
+        <img style="width: 15px" src="Images/Meal.jpg" /> 
+        <!-- /ko -->
+        <!-- ko if: activity.breast() !== DrBaby.Model.Breast.None -->
+        <span style="font-weight: bold" data-bind="text: DrBaby.Model.Breast[activity.breast()]" /> 
+        <!-- /ko -->
+        <span data-bind="text: durationLabel()" /> 
+        <span style="font-size: 10px" data-bind="text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')' " />
+        <!-- ko if: activity.postDoses().length > 0 || activity.preDoses().length > 0 -->
+        <img style="width: 15px" src="Images/Medicament.png" /><!-- /ko -->
+        <!-- ko if: activity.note() -->
+        <img style="width: 15px" src="Images/Note.png" /><!-- /ko -->
+    </script>
+
+    <script type="text/html" id="tmplFeedingView">
+        <!-- ko if: activity.breast() === DrBaby.Model.Breast.None && activity.meals().length > 0 -->
+            <img style="width: 15px" src="Images/Meal.jpg" />
+        <!-- /ko -->
+        <!-- ko if: activity.breast() !== DrBaby.Model.Breast.None -->
+            <span style="font-weight: bold" data-bind="text: DrBaby.Model.Breast[activity.breast()][0]" />
+        <!-- /ko -->
+           <span data-bind="text: duration()" />min
+        <!-- ko if: activity.postDoses().length > 0 || activity.preDoses().length > 0 -->
+            <img style="width: 10px" src="Images/Medicament.png" />
+        <!-- /ko -->
+        <!-- ko if: activity.note() -->
+            <img style="width: 10px" src="Images/Note.png" />
+        <!-- /ko -->
+    </script>
+
+    <script type="text/html" id="tmplFeedingViewSelected">
+        <!-- ko if: activity.breast() === DrBaby.Model.Breast.None && activity.meals().length > 0 -->
+            <img style="width: 15px" src="Images/Meal.jpg" /> 
+        <!-- /ko -->
+        <!-- ko if: activity.breast() !== DrBaby.Model.Breast.None -->
+             <span style="font-weight: bold" data-bind="text: DrBaby.Model.Breast[activity.breast()]" /> 
+        <!-- /ko -->
+        <span data-bind="text: durationLabel()" /> 
+        <span style="font-size: 10px" data-bind="text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'" /><br />
+        <span style="font-size: 10px" data-bind="text: 'po: ' + previousBeforeLabel() " />
+        <!-- ko if: activity.meals().length > 0 -->
+            <div style="font-size: 10px">
+            <!-- ko if: activity.breast() !== DrBaby.Model.Breast.None --><img style="width: 9px" src="Images/Meal.jpg" /><!-- /ko -->
+            <!-- ko foreach: activity.meals() -->
+	             <!-- ko if: $index() > 0 -->, <!-- /ko --><span data-bind="text: name" />
+            <!-- /ko -->
+            </div>
+        <!-- /ko -->
+        <!-- ko foreach: activity.preDoses() -->
+	        <div style="font-size: 10px"><img style="width: 9px" src="Images/Medicament.png" /> pred: <span data-bind="text: name" /></div>
+        <!-- /ko -->
+        <!-- ko foreach: activity.postDoses() -->
+	        <div style="font-size: 10px"><img style="width: 9px" src="Images/Medicament.png" /> po: <span data-bind="text: name" /></div>
+        <!-- /ko -->
+    </script>
+
+    <script type="text/html" id="tmplMainPage">
+        <div class="mainPage">           
+            <!-- ko if: bShowHeader --><div style="box-sizing: border-box; border-bottom: solid 1px black; width: 100%; text-align: center; font-size: 14px; padding: 3px; background: #ECECEC; color: #253344; font-weight: bold">                
+                <span data-bind="text: DrBaby.Application.child.name" /> - <span data-bind="text: DrBaby.Application.child.daysSinceBirth" />.den<br />
+            </div>
+            <!-- /ko -->
+            <div class="clockPanel">               
+                <!-- ko if: !activeFeeding() && !activeSleep() -->
+                <span class="clockBig shadowBig" data-bind="text: actualTime" />
+                <!-- /ko -->
+                <!-- ko if: activeFeeding() || activeSleep() -->
+                <span class="clockMedium shadowMedium" data-bind="text: actualTime" />
+                <!-- /ko -->
+            </div>
+            <!-- ko if: !activeFeeding() && !activeSleep() -->
+            <div class="actionPanel">                
+                <a class="button small" style="flex: 1 1 47%" data-bind="click: startNewFeeding" href="#">
+                    <span data-bind="text: feedingActionLabel" /><br />
+                    <span class="clockSmall" data-bind="text: lastFedLabel" />
+                </a>
+                <a class="button small" style="flex: 0 1 6%; font-size: 50px; margin: 0px 10px; padding-top: 4px" data-bind="click: addEvent" href="#">                  
+                    +
+                </a>
+                <a class="button small" style="flex: 1 1 47%" data-bind="click: startNewSleep" href="#">                    
+                    Sleep<br />
+                    <span class="clockSmall" data-bind="text: lastSleepLabel" />
+                </a>
+            </div>
+            <!-- /ko -->
+            <!-- ko if: activeSleep() -->
+            <div class="activityPanel" data-bind="style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column' }">
+                <!-- ko if: !activeSleep().startedOn() -->
+                <div style="flex-grow: 1">
+                    Falling asleep<br />
+                    <span class="clockBig" data-bind="text: fallingAsleepDurationLabel" />
+                </div>
+                <div data-bind="style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%' }">
+                    <a class="button big" data-bind="click: fallAsleep.bind($data, new Date())" href="#">
+                        Sleeps
+                    </a>
+                    <a class="button big" data-bind="click: cancelActiveSleep" href="#">
+                        Wont sleep
+                    </a>
+                </div>
+                <!-- /ko -->
+                <!-- ko if: activeSleep().startedOn() -->
+                <div style="flex-grow: 1">                    
+                    Sleeping<br />
+                    <span class="clockBig" data-bind="text: activeSleepDurationLabel" />
+                </div>
+                <div data-bind="style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%' }">
+                    <a class="button big" data-bind="click: finishActiveSleep" href="#">
+                        Waking up
+                    </a>
+                    <a class="button big" data-bind="click: fallAsleep.bind($data, undefined)" href="#">
+                        Not sleeping
+                    </a>
+                </div>
+                <!-- /ko -->
+            </div>
+            <!-- /ko -->
+            <!-- ko if: activeFeeding() && !activeSleep() -->
+            <div class="activityPanel" data-bind="style: {flexDirection: DrBaby.Application.wideScreen() ? 'row' : 'column' }">
+                <div style="flex-grow: 1">
+                    Feeding<br />
+                    <span class="clockBig" data-bind="text: activeFeedingDurationLabel" />
+                </div>
+                <div data-bind="style: {width: DrBaby.Application.wideScreen() ? 'auto' : '100%' }">
+                    <a class="button big" data-bind="click: finishActiveFeeding" href="#">
+                        Finished
+                    </a>
+                    <a class="button big" data-bind="click: cancelActiveFeeding" href="#">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+            <!-- /ko -->
+            <!-- ko with: timeLine -->
+            <div style="position: relative; width: 100%; overflow: hidden">                
+                <!-- ko foreach: slots -->
+                <div style="position: relative; box-sizing: border-box; border-bottom: dotted 1px #aaaaaa; height: 30px; width: 100%" data-bind="style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' }">                   
+                    <span style="position: absolute; left: 2px; bottom: 2px; font-size: 10px; color: silver" data-bind="text: hourLabel + ':30 ' " />
+                    <span style="position: absolute; right: 2px; bottom: 2px; font-size: 10px; color: silver" data-bind="text: dayLabel" />
+                </div>
+                <div style="position: relative; box-sizing: border-box; height: 30px; width: 100%" data-bind="style: { backgroundColor: !isDaySlot ? '#FFF3CC' : '#FFFCF4' , borderBottom: hour === 0 ? 'solid 2px black' : 'dashed 1px #555555' }">                   
+                    <span style="position: absolute; left: 2px; bottom: 2px" data-bind="text: hourLabel + ':00 ' " />
+                    <!-- ko if: hour === 0 -->
+                    <div style="position: absolute; left: 0px; bottom: 2px; width: 100%; text-align: center">                      
+                        <span style="color: silver" data-bind="text: time.format('dddd D.M.YYYY')" />
+                    </div>
+                    <!-- /ko -->
+                </div>
+                <!-- /ko -->
+                <!-- ko if: currentTime() >= 0 -->
+                <div style="position: absolute; padding: 0px; box-sizing: border-box; border-bottom: dotted 2px red; height: 2px; left: 0px; width: 100%" data-bind="style: {bottom: currentTime() + 'px' }" />
+                <!-- /ko -->
+                <!-- ko foreach: activities -->
+                <!-- ko template: { name: 'tmplActivityTimeLine' } --><!-- /ko -->
+                <!-- ko if: showInfoBubble -->
+                <!-- ko template: { name: 'tmplActivityInfoBubble' } --><!-- /ko -->
+                <!-- /ko -->
+                <!-- /ko -->
+            </div>
+            <!-- /ko -->
+            <a class="button" style="width: 100%; border-bottom-width: 1px" data-bind="click: loadMore">              
+                <!-- ko if: !loadingMore() -->
+                <span>Load more</span>
+                <!-- /ko -->
+                <!-- ko if: loadingMore() -->
+                <img src="Images/loading_small.gif" /> <span>Loading...</span>
+                <!-- /ko -->
+            </a>
+        </div>
+    </script>
+
+    <script type="text/html" id="tmplMedicineViewWide">
+        <img src="Images/Medicament.png" style="width: 15px" /> 
+        <span style="font-weight: bold" data-bind="text: activity.dose().name()" /> 
+        <span style="font-size: 10px" data-bind="text: '(' + moment(activity.startedOn()).format('HH:mm') + ')'" />
+    </script>
+
+    <script type="text/html" id="tmplMedicineView">
+        <img src="Images/Medicament.png" style="width: 15px" />
+    </script>
+
+    <script type="text/html" id="tmplMedicineViewSelected">
+        <img src="Images/Medicament.png" style="width: 15px" /> <span style="font-size: 10px; font-weight: bold" data-bind="text: activity.dose().name()" /><br />
+	    <span style="font-size: 10px" data-bind="text: moment(activity.startedOn()).format('HH:mm')" />
+    </script>
+
+    <script type="text/html" id="tmplSleepViewWide">
+        <span style="font-weight: bold" data-bind="text: DrBaby.Model.SleepPlace[activity.place()]" /> <span data-bind="text: duration()" />minut 
+        <span style="font-size: 10px" data-bind="text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'" />
+        <!-- ko if: activity.note() -->
+            <img style="width: 15px" src="Images/Note.png" />
+        <!-- /ko -->    
+    </script>
+
+    <script type="text/html" id="tmplSleepView">
+        <span style="font-weight: bold" data-bind="text: DrBaby.Model.SleepPlace[activity.place()]" /> <span data-bind="text: duration()" />min
+        <!-- ko if: activity.note() -->
+            <img style="width: 10px" src="Images/Note.png" />
+        <!-- /ko -->
+    </script>
+
+    <script type="text/html" id="tmplSleepViewSelected">
+        <span style="font-weight: bold" data-bind="text: DrBaby.Model.SleepPlace[activity.place()]" /> <span data-bind="text: duration()" />minut 
+        <span style="font-size: 10px" data-bind="text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'" /><br />
+        <span style="font-size: 10px" data-bind="text: 'po: ' + previousBeforeLabel() " />
+        <!-- ko if: activity.quality() !== undefined -->
+	        <span style="font-size: 10px" data-bind="text: 'Quality: ' + DrBaby.Model.SleepQuality[activity.quality()]" />
+        <!-- /ko -->    
+    </script>
+
+    <script type="text/html" id="tmplNotePage">
+        <div style="display: flex; flex-direction: column">
+	        <div class="main" style="flex: 1 1 auto">
+		        <textarea style="width: 100%; height: 200px" data-bind="value: text" />
+	        </div>
+	        <div class="main" style="flex: 1 1 auto">
+		        <div class="button big" style="background: #d3ffd6" data-bind="click: finished">
+			        Ulozit
+		        </div>
+		        <br />
+		        <div class="button big" style="" data-bind="click: close">
+			        Zrusit
+		        </div>
+	        </div>
+        </div>
+    </script>
+
+<!-- END: Knockout Templates -->
+
+    <!-- ko template: { name: 'tmplRescoAppForm' } --><!-- /ko -->
+    <script>
+        DrBaby.Application.run();
+    </script>
 </body>
 </html>

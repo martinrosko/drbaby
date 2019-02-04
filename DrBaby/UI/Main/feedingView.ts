@@ -3,16 +3,14 @@
 		constructor(parent: TimeLine, activity: Model.Activity) {
 			super(parent, activity);
 
-			this.darkColor("navy");
-            this.lightColor("238, 238, 248");//"#EEEEF8");
+            this.m_column = 0;
+            this.m_selectedWidth = 210;
+			this.className("feedingView");
 		}
 
-		protected _getTemplateName(isWide: boolean, isSelected: boolean): string {
-			if (isSelected)
-				return "tmplFeedingViewSelected";
-
-			return isWide ? "tmplFeedingViewWide" : "tmplFeedingView";
-		}
+        protected getBubbleContentTemplateName(): string {
+            return "tmplFeedingView";
+        }
 
 		protected _getActionMenuButtons(): string[] {
 			return ["Change Breast", "Add Meal", "Pre-Medicament", "Post-Medicament"].concat(super._getActionMenuButtons());
@@ -59,49 +57,4 @@
 			}, this, "Medicament", false, "Cancel", doses.map(d => d.name()));
 		}
 	}
-
-    Resco.Controls.KOEngine.instance.addTemplate("tmplFeedingViewWide", "<!-- ko if: activity.breast() === DrBaby.Model.Breast.None && activity.meals().length > 0 -->\
-    <img style=\"width: 15px\" src=\"Images/Meal.jpg\" /> \
-<!-- /ko -->\
-<!-- ko if: activity.breast() !== DrBaby.Model.Breast.None -->\
-     <span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.Breast[activity.breast()]\" /> \
-<!-- /ko -->\
-<span data-bind=\"text: durationLabel()\" /> \
-<span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'\" />\
-<!-- ko if: activity.postDoses().length > 0 || activity.preDoses().length > 0 --><img style=\"width: 15px\" src=\"Images/Medicament.png\" /><!-- /ko -->\
-<!-- ko if: activity.note() --><img style=\"width: 15px\" src=\"Images/Note.png\" /><!-- /ko -->");
-
-    Resco.Controls.KOEngine.instance.addTemplate("tmplFeedingView", "<!-- ko if: activity.breast() === DrBaby.Model.Breast.None && activity.meals().length > 0 -->\
-    <img style=\"width: 15px\" src=\"Images/Meal.jpg\" /> \
-<!-- /ko -->\
-<!-- ko if: activity.breast() !== DrBaby.Model.Breast.None -->\
-     <span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.Breast[activity.breast()][0]\" /> \
-<!-- /ko -->\
-<span data-bind=\"text: duration()\" />min\
-<!-- ko if: activity.postDoses().length > 0 || activity.preDoses().length > 0 --><img style=\"width: 10px\" src=\"Images/Medicament.png\" /><!-- /ko -->\
-<!-- ko if: activity.note() --><img style=\"width: 10px\" src=\"Images/Note.png\" /><!-- /ko -->");
-
-    Resco.Controls.KOEngine.instance.addTemplate("tmplFeedingViewSelected", "<!-- ko if: activity.breast() === DrBaby.Model.Breast.None && activity.meals().length > 0 -->\
-    <img style=\"width: 15px\" src=\"Images/Meal.jpg\" /> \
-<!-- /ko -->\
-<!-- ko if: activity.breast() !== DrBaby.Model.Breast.None -->\
-     <span style=\"font-weight: bold\" data-bind=\"text: DrBaby.Model.Breast[activity.breast()]\" /> \
-<!-- /ko -->\
-<span data-bind=\"text: durationLabel()\" /> \
-<span style=\"font-size: 10px\" data-bind=\"text: '(' + moment(activity.startedOn()).format('HH:mm') + ' - ' + moment(activity.endedOn()).format('HH:mm') + ')'\" /><br />\
-<span style=\"font-size: 10px\" data-bind=\"text: 'po: ' + previousBeforeLabel() \" />\
-<!-- ko if: activity.meals().length > 0 -->\
-    <div style=\"font-size: 10px\">\
-    <!-- ko if: activity.breast() !== DrBaby.Model.Breast.None --><img style=\"width: 9px\" src=\"Images/Meal.jpg\" /><!-- /ko -->\
-    <!-- ko foreach: activity.meals() -->\
-	     <!-- ko if: $index() > 0 -->, <!-- /ko --><span data-bind=\"text: name\" />\
-    <!-- /ko -->\
-    </div>\
-<!-- /ko -->\
-<!-- ko foreach: activity.preDoses() -->\
-	<div style=\"font-size: 10px\"><img style=\"width: 9px\" src=\"Images/Medicament.png\" /> pred: <span data-bind=\"text: name\" /></div>\
-<!-- /ko -->\
-<!-- ko foreach: activity.postDoses() -->\
-	<div style=\"font-size: 10px\"><img style=\"width: 9px\" src=\"Images/Medicament.png\" /> po: <span data-bind=\"text: name\" /></div>\
-<!-- /ko -->");
 }

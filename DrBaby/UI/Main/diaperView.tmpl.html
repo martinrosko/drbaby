@@ -1,0 +1,15 @@
+﻿    <script type="text/html" id="tmplDiaperViewWide">
+        <img style="width: 15px" data-bind="attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}" /> 
+        <span style="font-weight: bold" data-bind="text: DrBaby.Model.DiaperAmount[activity.amount()]" /> 
+        <span style="font-size: 10px" data-bind="text: '(' + moment(activity.startedOn()).format('HH:mm') + ')'" />
+    </script>
+
+    <script type="text/html" id="tmplDiaperView">
+        <img style="width: 15px" data-bind="attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}" />
+    </script>
+
+    <script type="text/html" id="tmplDiaperViewSelected">
+        <img style="width: 15px" data-bind="attr: {src: 'Images/' + (activity.load() === DrBaby.Model.DiaperLoad.Pee ? 'Pee' : 'Poop') + '.png'}" />
+        <span style="font-size: 10px; font-weight: bold" data-bind="text: DrBaby.Model.DiaperAmount[activity.amount()]" /><br />
+	    <span style="font-size: 10px" data-bind="text: moment(activity.startedOn()).format('HH:mm')" />
+    </script>

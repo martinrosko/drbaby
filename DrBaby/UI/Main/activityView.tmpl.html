@@ -1,0 +1,27 @@
+﻿    <script type="text/html" id="tmplActivityInfoBubble">
+        <div data-bind="attr: {class: className()}">
+            <div class="indexLine" data-bind="style: {bottom: (start() + (duration() / 2)) + 'px', width: (bounds.left() - 60) + 'px'}"></div>
+            <div class="infoBubble background" data-bind="click: select, css: {selected: selected()}, style: {bottom: (start() + (duration() / 2) - 14) + 'px', left: bounds.left() + 'px', width: (bounds.width() >= 0 ? bounds.width() + 'px' : 'auto'), maxWidth: (bounds.width() < 0 ? (-1 * bounds.width()) + 'px' : 'auto')}">
+                <div style="padding: 5px; width: 100%">
+                    <!-- ko template: { name: contentTemplateName(), afterRender: contentRendered.bind($data) } --><!-- /ko -->
+                    <!-- ko if: selected() && showNotes && activity.note() -->
+                    <div style="font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; cursor: pointer" data-bind="click: editNote">
+                        <img style="width: 12px" src="Images/Note.png" /> <span style="font-style: italic" data-bind="text: activity.note().text()" />
+                    </div>
+                    <!-- /ko -->
+                </div>
+                <!-- ko if: selected() -->
+                <div class="rightBorder" data-bind="click: showActionMenu, clickBubble: false">...</div>
+                <!-- /ko -->
+            </div>
+        </div>
+    </script>
+
+    <script type="text/html" id="tmplActivityTimeLine">
+        <div data-bind="attr: {class: className()}">
+            <div class="timeLine" data-bind="style: {bottom: start() + 'px' , height: duration() + 'px'}"></div>
+        </div>
+    </script>
+
+    <script type="text/html" id="tmplBaseActivityView">
+    </script>

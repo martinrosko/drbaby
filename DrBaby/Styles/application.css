@@ -1,96 +1,282 @@
+.activityView .timeLine, .feedingView .timeLine, .sleepView .timeLine, .eventView .timeLine, .medicineView .timeLine, .peeView .timeLine, .poopView .timeLine {
+  position: absolute;
+  left: 45px;
+  width: 15px;
+  opacity: 0.65; }
+
+.activityView .timeLine, .activityView .indexLine, .activityView .rightBorder {
+  background: black; }
+
+.activityView .darkBorderColor {
+  border-color: black; }
+
+.activityView .background {
+  background: white;
+  background: rgba(255, 255, 255, 0.75);
+  border-color: black; }
+
+.activityView .background.selected {
+  background: rgba(255, 255, 255, 0.9); }
+
+.activityView .rightBorder {
+  color: white;
+  width: 30px;
+  cursor: pointer;
+  text-align: center; }
+
+.activityView .infoBubble {
+  min-width: auto; }
+
+.feedingView .timeLine, .feedingView .indexLine, .feedingView .rightBorder {
+  background: navy; }
+
+.feedingView .darkBorderColor {
+  border-color: navy; }
+
+.feedingView .background {
+  background: #EEEEF8;
+  background: rgba(238, 238, 248, 0.75);
+  border-color: navy; }
+
+.feedingView .background.selected {
+  background: rgba(238, 238, 248, 0.9); }
+
+.feedingView .rightBorder {
+  color: #EEEEF8;
+  width: 30px;
+  cursor: pointer;
+  text-align: center; }
+
+.feedingView .infoBubble {
+  min-width: 80px; }
+
+.sleepView .timeLine, .sleepView .indexLine, .sleepView .rightBorder {
+  background: #4A9E78; }
+
+.sleepView .darkBorderColor {
+  border-color: #4A9E78; }
+
+.sleepView .background {
+  background: #DEECE6;
+  background: rgba(222, 236, 230, 0.75);
+  border-color: #4A9E78; }
+
+.sleepView .background.selected {
+  background: rgba(222, 236, 230, 0.9); }
+
+.sleepView .rightBorder {
+  color: #DEECE6;
+  width: 30px;
+  cursor: pointer;
+  text-align: center; }
+
+.sleepView .infoBubble {
+  min-width: 100px; }
+
+.eventView .timeLine, .eventView .indexLine, .eventView .rightBorder {
+  background: #1d516b; }
+
+.eventView .darkBorderColor {
+  border-color: #1d516b; }
+
+.eventView .background {
+  background: #e1f0f9;
+  background: rgba(225, 240, 249, 0.75);
+  border-color: #1d516b; }
+
+.eventView .background.selected {
+  background: rgba(225, 240, 249, 0.9); }
+
+.eventView .rightBorder {
+  color: #e1f0f9;
+  width: 30px;
+  cursor: pointer;
+  text-align: center; }
+
+.eventView .infoBubble {
+  min-width: auto; }
+
+.medicineView .timeLine, .medicineView .indexLine, .medicineView .rightBorder {
+  background: red; }
+
+.medicineView .darkBorderColor {
+  border-color: red; }
+
+.medicineView .background {
+  background: white;
+  background: rgba(255, 255, 255, 0.75);
+  border-color: red; }
+
+.medicineView .background.selected {
+  background: rgba(255, 255, 255, 0.9); }
+
+.medicineView .rightBorder {
+  color: white;
+  width: 30px;
+  cursor: pointer;
+  text-align: center; }
+
+.medicineView .infoBubble {
+  min-width: auto; }
+
+.peeView .timeLine, .peeView .indexLine, .peeView .rightBorder {
+  background: orange; }
+
+.peeView .darkBorderColor {
+  border-color: orange; }
+
+.peeView .background {
+  background: #f9f5c7;
+  background: rgba(249, 245, 199, 0.75);
+  border-color: orange; }
+
+.peeView .background.selected {
+  background: rgba(249, 245, 199, 0.9); }
+
+.peeView .rightBorder {
+  color: #f9f5c7;
+  width: 30px;
+  cursor: pointer;
+  text-align: center; }
+
+.peeView .infoBubble {
+  min-width: auto; }
+
+.poopView .timeLine, .poopView .indexLine, .poopView .rightBorder {
+  background: brown; }
+
+.poopView .darkBorderColor {
+  border-color: brown; }
+
+.poopView .background {
+  background: #ffd799;
+  background: rgba(255, 215, 153, 0.75);
+  border-color: brown; }
+
+.poopView .background.selected {
+  background: rgba(255, 215, 153, 0.9); }
+
+.poopView .rightBorder {
+  color: #ffd799;
+  width: 30px;
+  cursor: pointer;
+  text-align: center; }
+
+.poopView .infoBubble {
+  min-width: auto; }
+
+.infoBubble {
+  box-sizing: border-box;
+  position: absolute;
+  z-index: 2;
+  border-radius: 15px;
+  border-style: solid;
+  border-width: 2px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  box-shadow: 3px 3px 6px 2px #314240;
+  height: 30px; }
+
+.infoBubble.selected {
+  height: auto;
+  min-height: 30px;
+  z-index: 10; }
+
+/*$button-color: #ececec;
+$button-background-color1: #0f0b15;
+$button-background-color2: #3F6AA0;
+$button-border-color: #0e1423;
+$button-text-shadow-color: #030406;*/
 body {
-	margin: 0px;
-	padding: 0px;
-	font-size: 14px;
-	font-family: 'Segoe UI SemiLight', sans-serif;
-	/*background: #8db7ce;*/
-}
+  margin: 0px;
+  padding: 0px;
+  font-size: 14px;
+  font-family: 'Segoe UI SemiLight', sans-serif;
+  /*background: #8db7ce;*/ }
 
 textarea {
-	font-size: 14px;
-	font-family: 'Segoe UI SemiLight', sans-serif;
-	border: 0px;
-}
+  font-size: 14px;
+  font-family: 'Segoe UI SemiLight', sans-serif;
+  border: 0px; }
+
+div {
+  box-sizing: border-box; }
 
 div.main {
-	text-align: center;
-}
+  text-align: center; }
+
+div.mainPage {
+  background: #8db7ce; }
+  div.mainPage div.clockPanel {
+    border-bottom: solid 1px black;
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+    padding: 3px;
+    background: #F5FFED;
+    color: black; }
+    div.mainPage div.clockPanel .shadowBig {
+      text-shadow: 2px 3px 5px #4c888e; }
+    div.mainPage div.clockPanel .shadowMedium {
+      text-shadow: 2px 2px 3px #4c888e; }
+  div.mainPage div.actionPanel {
+    padding: 20px 10px;
+    border-bottom: solid 1px black;
+    display: flex;
+    flex-direction: row;
+    background: #dbeaca; }
+  div.mainPage div.activityPanel {
+    padding: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: #dbeaca;
+    color: #4e673f; }
+    div.mainPage div.activityPanel .clockBig {
+      text-shadow: 2px 2px 3px black; }
+
+.clockBig, .clockMedium, .clockSmall {
+  font-weight: bold; }
 
 .clockBig {
-    font-weight: bold;
-    font-size: 96px;
-}
+  font-size: 96px; }
 
 .clockMedium {
-    font-weight: bold;
-    font-size: 48px;
-}
+  font-size: 48px; }
 
 .clockSmall {
-    font-weight: bold;
-    font-size: 32px;
-}
-
-.whiteClockBlackShadow {
-    color: white;
-    text-shadow: 2px 3px 2px black;
-}
-
-.whiteClockSkyShadow {
-    color: white;
-    text-shadow: 2px 3px 5px #4c888e;
-}
-
-.whiteClockSkyShadowMedium {
-    color: white;
-    text-shadow: 1px 2px 3px #4c888e;
-}
-/*a.button {
-    background: #ECECEC;
-    border-radius: 5px;
-    padding: 10px 20px;
-    display: block;
-    font-weight: bold;
-    color: #7f7f7f;
-    text-decoration: none;
-    text-shadow: 0px 1px 0px #fff;
-    border: 1px solid #a7a7a7;
-    margin: 0px auto;
-    text-align: center;
-    box-shadow: 0px 2px 1px white inset, 0px -2px 8px white, 0px 2px 5px rgba(0, 0, 0, 0.1), 0px 8px 10px rgba(0, 0, 0, 0.1);
-    -webkit-transition: box-shadow 0.5s;
-}
-
-a.button:hover {
-    box-shadow: 0px 2px 1px white inset, 0px -2px 20px white, 0px 2px 5px rgba(0, 0, 0, 0.1), 0px 8px 10px rgba(0, 0, 0, 0.1);
-}
-
-a.button:active {
-    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.5) inset, 0px -2px 20px white, 0px 1px 5px rgba(0, 0, 0, 0.1), 0px 2px 10px rgba(0, 0, 0, 0.1);
-    background: -webkit-linear-gradient(top, #d1d1d1 0%,#ECECEC 100%);
-}*/
+  font-size: 32px; }
 
 a.button {
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    background: #eee;
-    background: -webkit-gradient(linear, 0 0, 0 bottom, from(#eee), to(#e2e2e2));
-    background: -moz-linear-gradient(#eee, #e2e2e2);
-    background: linear-gradient(#eee, #e2e2e2);
-    border: solid 1px #d0d0d0;
-    border-bottom: solid 3px #b2b1b1;
-    border-radius: 3px;
-    color: #555;
-    display: inline-block;
-    font-weight: bold;
-    padding: 10px 20px;
-    position: relative;
-    text-align: center;
-    text-decoration: none;
-    text-shadow: 0 1px 0 #fafafa;
-}
+  background: white;
+  background: -webkit-gradient(linear, 0 0, 0 bottom, from(white), to(#92af49));
+  background: -moz-linear-gradient(white, #92af49);
+  background: linear-gradient(white, #92af49);
+  border: solid 1px #0e1423;
+  border-bottom: solid 3px #0e1423;
+  color: #030406;
+  text-shadow: 1px 2px 1px silver;
+  display: inline-block;
+  font-weight: bold;
+  padding: 10px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box; }
 
-a.button:hover {
+a.button.big {
+  height: 50px;
+  padding-top: 25px;
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  min-width: 230px;
+  width: 80%; }
+
+/*a.button:hover {
     background: #e4e4e4;
     background: -webkit-gradient(linear, 0 0, 0 bottom, from(#e4e4e4), to(#ededed));
     background: -moz-linear-gradient(#e4e4e4, #ededed);
@@ -98,138 +284,58 @@ a.button:hover {
     border: solid 1px #c2c2c2;
     border-bottom: solid 3px #b2b1b1;
     box-shadow: inset 0 0 0 1px #efefef;
-}
-
+}*/
 a.button:active {
-    background: #dfdfdf;
-    background: -webkit-gradient(linear, 0 0, 0 bottom, from(#dfdfdf), to(#e3e3e3));
-    background: -moz-linear-gradient(#dfdfdf, #e3e3e3);
-    background: linear-gradient(#dfdfdf, #e3e3e3);
-    border: solid 1px #959595;
-    box-shadow: inset 0 10px 15px 0 #c4c4c4;
-    top: 2px;
-}
-
-    a.button.blue_alt {
-        background: #becbd6;
-        background: -webkit-gradient(linear, 0 0, 0 bottom, from(#0f0b15), to(#3F6AA0));
-        background: -moz-linear-gradient(#0f0b15, #3F6AA0);
-        background: linear-gradient(#0f0b15, #3F6AA0);
-        border: solid 1px #0e1423;
-        border-bottom: solid 3px #0e1423;
-        color: #ECECEC;
-        text-shadow: 1px 2px 1px #030406;
-    }
-
-a.button.blue_alt:hover {
-    background: #97adbd;
-    background: -webkit-gradient(linear, 0 0, 0 bottom, from(#97adbd), to(#a8bac8));
-    background: -moz-linear-gradient(#97adbd, #a8bac8);
-    background: linear-gradient(#97adbd, #a8bac8);
-    border: solid 1px #96a2ab;
-    border-bottom: solid 3px #62727e;
-    box-shadow: inset 0 0 0 1px #c0ced7;
-}
-
-a.button.blue_alt:active {
-    background: #8fa6b6;
-    background: -webkit-gradient(linear, 0 0, 0 bottom, from(#8fa6b6), to(#8aa0b0));
-    background: -moz-linear-gradient(#8fa6b6, #8aa0b0);
-    background: linear-gradient(#8fa6b6, #8aa0b0);
-    border: solid 1px #606f7a;
-    box-shadow: inset 0 10px 15px 0 #7e92a1;
-}
+  background: #dfdfdf;
+  background: -webkit-gradient(linear, 0 0, 0 bottom, from(#dfdfdf), to(#e3e3e3));
+  background: -moz-linear-gradient(#dfdfdf, #e3e3e3);
+  background: linear-gradient(#dfdfdf, #e3e3e3);
+  border: solid 1px #959595;
+  box-shadow: inset 0 10px 15px 0 #c4c4c4;
+  top: 2px; }
 
 .action {
-	background: #4e5c6d;
-	color: white;
-	border: solid 2px black;
-	border-radius: 8px;
-	padding: 10px;
-	text-align: center;
-	cursor: pointer;
-}
-
-a.buttonBig {
-	height: 50px;
-	padding-top: 25px;
-	font-size: 32px;
-	font-weight: bold;
-	margin-bottom: 10px;
-	min-width: 230px;
-    width: 80%;
-}
-
-a.buttonSmall {
-    padding-bottom: 2px;
-}
+  background: #4e5c6d;
+  color: white;
+  border: solid 2px black;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer; }
 
 .indexLine {
-	position: absolute;
-	left: 60px;
-	height: 2px;
-	z-index: 1;
-}
-
-.infoBubble {
-    box-sizing: border-box;
-    position: absolute;
-    z-index: 2;
-    border-radius: 15px;
-    border-style: solid;
-    border-width: 2px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: row;
-    align-content: center;
-    box-shadow: 3px 3px 6px 2px #314240;
-}
-
-.infoBubbleUnselected {
-	height: 30px;
-}
-
-.infoBubbleSelected {
-	min-height: 30px;
-	z-index: 10;
-}
+  position: absolute;
+  left: 60px;
+  height: 2px;
+  z-index: 1; }
 
 .statsBanner {
-	padding: 5px;
-	border-bottom: solid 1px black;
-	min-height: 60px;
-	width: 100%;
-	font-weight: bold;
-	font-size: 16px;
-	background: #e3fcfc;
-	text-align: center;
-	background-position: center;
-	background-size: cover;
-}
-
-.statsBanner .detailBar {
-	display: flex;
-	flex-direction: row;
-}
-
-.statsBanner .detailBar .detailCell {
-	flex-grow: 1;
-	font-size: 12px;
-	font-weight: normal;
-}
+  padding: 5px;
+  border-bottom: solid 1px black;
+  min-height: 60px;
+  width: 100%;
+  font-weight: bold;
+  font-size: 16px;
+  background: #e3fcfc;
+  text-align: center;
+  background-position: center;
+  background-size: cover; }
+  .statsBanner .detailBar {
+    display: flex;
+    flex-direction: row; }
+    .statsBanner .detailBar .detailCell {
+      flex-grow: 1;
+      font-size: 12px;
+      font-weight: normal; }
 
 .timeLine {
-	position: relative;
-	border-bottom: solid 1px black;
-	height: 20px;
-	width: 100%;
-	font-weight: bold;
-	overflow: hidden;
-}
-
-.timeLine .timeLineItem {
-	position: absolute;
-	top: 0;
-	height: 20px;
-	opacity: 0.65
-}
+  position: relative;
+  height: 20px;
+  width: 100%;
+  font-weight: bold;
+  overflow: hidden; }
+  .timeLine .timeLineItem {
+    position: absolute;
+    top: 0;
+    height: 20px;
+    opacity: 0.65; }
