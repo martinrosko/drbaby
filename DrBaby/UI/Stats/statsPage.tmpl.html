@@ -1,0 +1,68 @@
+﻿    <script type="text/html" id="tmplStatsPage">
+        <div class="statsPage">
+            <div class="header">
+                <a class="button" style="flex-grow: 0" data-bind="click: loadDay.bind($data, -1)">&lt;</a>
+                <a style="padding-top: 10px; flex-grow: 1; font-size: 20px" data-bind="text: dayLabel()"></a>
+                <a class="button" style="flex-grow: 0" data-bind="click: loadDay.bind($data, 1)">&gt;</a>
+            </div>
+            <div class="statsBanner">
+                <h1>Day Sleep</h1>
+                Count: <span data-bind="text: daySleepCount()" /><br />
+                Total duration: <span data-bind="text: daySleepDuration()" /><br />
+                Average: <span data-bind="text: daySleepAvgDuration()" /><br />
+                Maximum: <span data-bind="text: daySleepMax()" /><br />
+                Minimum: <span data-bind="text: daySleepMin()" /><br />
+                <img src="Images\Sleep.png" />
+            </div>
+            <div class="timeLine">
+                <!-- ko foreach: daySleeps -->
+                <div class="sleepView">
+                    <div class="timeLineItem indexLine" data-bind="style: { left: Math.round(start() / 7.2) + '%', width: Math.round(duration() / 7.2) + '%'}"></div>
+                </div>
+                <!-- /ko -->
+            </div>
+            <!-- ko if: nightSleepCount() > 0 -->
+            <div class="statsBanner">
+                <h1>Night Sleep</h1>
+                Count: <span data-bind="text: nightSleepCount()" /><br />
+                Total duration: <span data-bind="text: nightSleepDuration()" /><br />
+                Average: <span data-bind="text: nightSleepAvgDuration()" /><br />
+                Maximum: <span data-bind="text: nightSleepMax()" /><br />
+                Minimum: <span data-bind="text: nightSleepMin()" /><br />
+                <img src="Images\Sleep.png" />
+            </div>
+            <div class="timeLine" ">
+                <!-- ko foreach: nightSleeps -->
+                <div class="sleepView">
+                    <div class="timeLineItem indexLine" data-bind="style: { left: Math.round(start() / 7.2) + '%', width: Math.round(duration() / 7.2) + '%'}"></div>
+                </div>
+                <!-- /ko -->
+            </div>
+            <!-- /ko -->
+            <div class="statsBanner">
+                <h1>Feeding</h1>
+                Breastfed Count: <span data-bind="text: feedingCount()" /><br />
+                Total duration: <span data-bind="text: feedingDuration()" /><br />
+                Average: <span data-bind="text: feedingAvgDuration()" /><br />
+                Maximum: <span data-bind="text: feedingMax()" /><br />
+                Minimum: <span data-bind="text: feedingMin()" /><br />
+                <img src="Images\Feeding.png" />
+            </div>
+            <div class="timeLine">
+                <!-- ko foreach: feedings -->
+                <div class="feedingView">
+                    <div class="timeLineItem indexLine" data-bind="style: { left: Math.round(start() / 7.2) + '%', width: Math.round(duration() / 7.2) + '%'}"></div>
+                </div>
+                <!-- /ko -->
+            </div>
+            <!-- ko if: doses().length > 0 -->
+            <div class="statsBanner">
+                <h1>Medicine</h1>
+                <!-- ko foreach: doses() -->
+                <span data-bind="text: dose.name() + ' (' + count + 'x)'" /><br />
+                <!-- /ko -->
+                <img src="Images\Medicament.png" />
+            </div>
+            <!-- /ko -->
+        </div>
+    </script>

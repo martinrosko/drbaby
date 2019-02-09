@@ -98,10 +98,10 @@
 				UI.AppForm.instance.initializing(false);
 
 				var page: UI.BasePage;
-				if (initPage.startsWith("stats"))
+				//if (initPage.startsWith("stats"))
 					page = new UI.StatsPage(UI.AppForm.instance, new Date());
-				else
-					page = new UI.MainPage(UI.AppForm.instance);
+				//else
+				//	page = new UI.MainPage(UI.AppForm.instance);
 
 				page.show();
 			}

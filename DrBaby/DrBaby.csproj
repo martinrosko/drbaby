@@ -39,7 +39,6 @@
     <Content Include="index-template.html" />
     <Content Include="index-release.html" />
     <Content Include="Publish\publish-mcrm.js" />
-    <Content Include="Styles\application.css" />
     <Content Include="index.html" />
     <Content Include="Libraries\es6_shim_min.js" />
     <Content Include="Libraries\jquery-1.7.1.min.js" />
@@ -58,6 +57,7 @@
     <Content Include="UI\Main\feedingView.tmpl.html" />
     <Content Include="UI\Main\activityView.tmpl.html" />
     <Content Include="UI\Note\notePage.tmpl.html" />
+    <Content Include="UI\Stats\statsPage.tmpl.html" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>

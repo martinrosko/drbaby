@@ -1,4 +1,4 @@
-﻿$pageBackground: #8db7ce;
+﻿$pageBackground: #F5FFED;
 
 /*$button-color: #ececec;
 $button-background-color1: #0f0b15;
@@ -20,6 +20,9 @@ $panel1-shadow-color: $skyColor;
 
 $panel2-background: #dbeaca; //#57799C;
 $panel2-color: #4e673f;
+
+$timeLineLightColor: #FFFCF4;
+$timeLineDarkColor: #FFF3CC;
 
 @mixin small-shadow($color) {
     text-shadow: 1px 2px 1px $color;
@@ -54,8 +57,8 @@ body {
     margin: 0px;
     padding: 0px;
     font-size: 14px;
+    height: 100%;
     font-family: 'Segoe UI SemiLight', sans-serif;
-    /*background: #8db7ce;*/
 }
 
 textarea {
@@ -70,10 +73,16 @@ div {
 
 div.main {
     text-align: center;
+    height: 100%;
+}
+
+%basePage {
+    background: $pageBackground;
+    height: 100%;
 }
 
 div.mainPage {
-    background: $pageBackground;
+    @extend %basePage;
 
     div.clockPanel {
         border-bottom: solid 1px black;
@@ -116,7 +125,85 @@ div.mainPage {
     }
 }
 
+div.statsPage {
+    @extend %basePage;
 
+    div.header {
+        display: flex;
+        flex-direction: row;
+        border-bottom: solid 1px black;
+        padding: 5px;
+        box-sizing: border-box;
+        width: 100%;
+        font-weight: bold;
+        background: $panel1-background;
+        color: $panel1-color;
+        font-size: 16px;
+        text-align: center;
+        @include small-shadow(silver);
+    }
+
+    div.statsBanner {
+        padding: 5px;
+        border-bottom: solid 1px black;
+        min-height: 60px;
+        width: 100%;
+        background: $timeLineDarkColor;
+        color: $panel1-color;
+        background-position: center;
+        background-size: cover;
+        position: relative;
+        overflow: hidden;
+
+        h1 {
+            text-align: center;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            color: navy;
+        }
+
+        span {
+            font-weight: bold;
+        }
+
+        img {
+            position:absolute;
+            right: 5px;
+            top: 5px;
+            opacity: 0.33;
+            width: 72px;
+        }
+
+        .detailBar {
+            display: flex;
+            flex-direction: row;
+
+            .detailCell {
+                flex-grow: 1;
+                font-size: 12px;
+                font-weight: normal;
+            }
+        }
+    }
+}
+
+.timeLine {
+    position: relative;
+    height: 20px;
+    width: 100%;
+    font-weight: bold;
+    overflow: hidden;
+    border-bottom: solid 1px black;
+    background: $timeLineLightColor;
+
+    .timeLineItem {
+        position: absolute;
+        top: 0;
+        height: 20px;
+        opacity: 0.65
+    }
+}
 %clock {
     font-weight: bold;
 }
@@ -195,44 +282,4 @@ a.button:active {
     left: 60px;
     height: 2px;
     z-index: 1;
-}
-
-
-.statsBanner {
-    padding: 5px;
-    border-bottom: solid 1px black;
-    min-height: 60px;
-    width: 100%;
-    font-weight: bold;
-    font-size: 16px;
-    background: #e3fcfc;
-    text-align: center;
-    background-position: center;
-    background-size: cover;
-
-    .detailBar {
-        display: flex;
-        flex-direction: row;
-
-        .detailCell {
-            flex-grow: 1;
-            font-size: 12px;
-            font-weight: normal;
-        }
-    }
-}
-
-.timeLine {
-    position: relative;
-    height: 20px;
-    width: 100%;
-    font-weight: bold;
-    overflow: hidden;
-
-    .timeLineItem {
-        position: absolute;
-        top: 0;
-        height: 20px;
-        opacity: 0.65
-    }
 }
