@@ -5,6 +5,7 @@
             </div>
             <!-- /ko -->
             <div class="clockPanel">               
+                <span data-bind="text: actualDate" /><br />
                 <!-- ko if: !activeFeeding() && !activeSleep() -->
                 <span class="clockBig shadowBig" data-bind="text: actualTime" />
                 <!-- /ko -->

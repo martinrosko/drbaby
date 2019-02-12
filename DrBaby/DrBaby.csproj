@@ -38,14 +38,13 @@
     <Content Include="Images\Statistics.png" />
     <Content Include="index-template.html" />
     <Content Include="index-release.html" />
-    <Content Include="Publish\publish-mcrm.js" />
     <Content Include="index.html" />
     <Content Include="Libraries\es6_shim_min.js" />
     <Content Include="Libraries\jquery-1.7.1.min.js" />
     <Content Include="Libraries\jquery-ui.min.css" />
     <Content Include="Libraries\jquery-ui.min.js" />
     <Content Include="Libraries\JSBridge.js" />
-    <Content Include="Libraries\knockout-3.4.2.js" />
+    <Content Include="Libraries\knockout-3.4.2.min.js" />
     <Content Include="Libraries\knockout_debug.js" />
     <Content Include="Libraries\moment_min.js" />
     <Content Include="Resco\Controls\Styles\controls.css" />
@@ -121,8 +120,6 @@
     <TypeScriptCompile Include="UI\Note\notePage.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Publish\generateMinimizeBat.js" />
-    <Content Include="Publish\publish-mcmr.bat" />
     <Content Include="Styles\application.scss" />
     <Content Include="package.json" />
     <Content Include="Styles\activityViews.scss" />
