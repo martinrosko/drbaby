@@ -11,6 +11,7 @@
 		public activeFeedingDurationLabel: KnockoutObservable<string>;
 		public feedingActionLabel: KnockoutComputed<string>;
 		public actualTime: KnockoutObservable<string>;
+        public actualDate: KnockoutObservable<string>;
 		public timeLine: TimeLine;
 		public selectedActivity: KnockoutObservable<ActivityView>;
 
@@ -22,6 +23,7 @@
 			this.templateName = "tmplMainPage";
 
 			this.actualTime = ko.observable<string>(moment(Application.now()).format("HH:mm"));
+            this.actualDate = ko.observable<string>(moment(Application.now()).format("dddd, DD.MMM.YYYY"));
 
 			this.lastSleep = ko.observable<Model.Sleep>();
 			this.lastSleepLabel = ko.observable<string>("N/A");
@@ -50,6 +52,7 @@
 			Application.now.subscribe(now => {
 				// actual time
 				this.actualTime(moment(now).format("HH:mm"));
+                this.actualDate(moment(now).format("dddd, DD.MMM.YYYY"));
 				// sleep duration labels
 				var activeSleep = this.activeSleep();
 				if (activeSleep) {

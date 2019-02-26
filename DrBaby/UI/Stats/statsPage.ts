@@ -105,7 +105,7 @@
 				this.nightSleeps().forEach(av => av.updateBaseLine(moment(evening)));
 				this.nightSleepMin(Application.getDurationLabel(this._getMinimumDuration(nightSleeps)));
 				this.nightSleepMax(Application.getDurationLabel(this._getMaximumDuration(nightSleeps)));
-				var nightSleepDuration = this._getActivitiesLength(nightSleeps);
+				var	nightSleepDuration = this._getActivitiesLength(nightSleeps);
 				this.nightSleepAvgDuration(Application.getDurationLabel(Math.round(nightSleepDuration / nightSleeps.length)));
 
 				if (nightSleeps.length > 0) {
@@ -218,64 +218,4 @@
 			this.count = count;
 		}
 	}
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplStatsPage", "<div style=\"display: flex; flex-direction: row; border-bottom: solid 1px black; padding: 5px; box-sizing: border-box; width: 100%; font-weight: bold; background: #e3fcfc; font-size: 16px; text-align: center\">\
-		<div class=\"action\" style=\"flex-grow: 0\" data-bind=\"click: loadDay.bind($data, -1)\">&lt;</div>\
-		<div style=\"padding-top: 10px; flex-grow: 1; font-size: 20px\" data-bind=\"text: dayLabel()\"></div>\
-		<div class=\"action\" style=\"flex-grow: 0\" data-bind=\"click: loadDay.bind($data, 1)\">&gt;</div>\
-	</div>\
-	<div class=\"statsBanner\" style=\"color: #1c3578; background-image: url('Images/Day.jpg')\">\
-		Day Sleep <span data-bind=\"text: daySleepDuration()\" /><br/><br/>\
-		<div class=\"detailBar\">\
-			<div class=\"detailCell\">Count<br /><span data-bind=\"text: daySleepCount()\" /></div>\
-			<div class=\"detailCell\">Avg.duration<br /><span data-bind=\"text: daySleepAvgDuration()\" /></div>\
-			<div class=\"detailCell\">Max<br /><span data-bind=\"text: daySleepMax()\" /></div>\
-			<div class=\"detailCell\">Min<br /><span data-bind=\"text: daySleepMin()\" /></div>\
-		</div>\
-	</div>\
-	<div class=\"timeLine\" style=\"background: #FFFCF4\">\
-		<!-- ko foreach: daySleeps -->\
-		<div class=\"timeLineItem\" data-bind=\"style: { left: Math.round(start() / 7.2) + '%', width: Math.round(duration() / 7.2) + '%', backgroundColor: darkColor()}\"></div>\
-		<!-- /ko -->\
-	</div>\
-	<div class=\"statsBanner\" style=\"color: white; background-image: url('Images/Night.jpg')\">\
-		Night Sleep  <span data-bind=\"text: nightSleepDuration()\" /><br/><br/>\
-		<div class=\"detailBar\">\
-			<div class=\"detailCell\">Count<br /><span data-bind=\"text: nightSleepCount()\" /></div>\
-			<div class=\"detailCell\">Avg.duration<br /><span data-bind=\"text: nightSleepAvgDuration()\" /></div>\
-			<div class=\"detailCell\">Max<br /><span data-bind=\"text: nightSleepMax()\" /></div>\
-			<div class=\"detailCell\">Min<br /><span data-bind=\"text: nightSleepMin()\" /></div>\
-		</div>\
-	</div>\
-	<div class=\"timeLine\" style=\"background: #FFF3CC\">\
-		<!-- ko foreach: nightSleeps -->\
-		<div class=\"timeLineItem\" data-bind=\"style: { left: Math.round(start() / 7.2) + '%', width: Math.round(duration() / 7.2) + '%', backgroundColor: darkColor()}\"></div>\
-		<!-- /ko -->\
-	</div>\
-	<div class=\"statsBanner\" style=\"color: black; background-image: url('Images/Feedingbanner.png')\">\
-		Breastfed <span data-bind=\"text: feedingCount()\" /><br/><br/>\
-		<div class=\"detailBar\">\
-			<div class=\"detailCell\">Avg.duration<br /><span data-bind=\"text: feedingAvgDuration()\" /></div>\
-			<div class=\"detailCell\">Avg.gap<br /><span data-bind=\"text: feedingAvgDiff()\" /></div>\
-			<div class=\"detailCell\">Max<br /><span data-bind=\"text: feedingMax()\" /></div>\
-			<div class=\"detailCell\">Min<br /><span data-bind=\"text: feedingMin()\" /></div>\
-		</div>\
-	</div>\
-	<div class=\"timeLine\">\
-		<div class=\"timeLineItem\" style=\"width: 50%; background: #FFFCF4; opacity: 1\"></div>\
-		<div class=\"timeLineItem\" style=\"left: 50%; width: 50%; background: #FFF3CC; opacity: 1\"></div>\
-		<!-- ko foreach: feedings -->\
-		<div class=\"timeLineItem\" data-bind=\"style: { left: Math.round(start() / 14.4) + '%', width: Math.round(duration() / 14.4) + '%', backgroundColor: darkColor()}\"></div>\
-		<!-- /ko -->\
-	</div>\
-	<!-- ko if: doses().length > 0 -->\
-	<div class=\"statsBanner\" style=\"color: black; background-image: url('Images/Medicine.png')\">\
-		Medicine<br/><br/>\
-		<div style=\"width: 100%; font-size: 12px; font-weight: normal; text-align: left\">\
-		<!-- ko foreach: doses() -->\
-			<span data-bind=\"text: dose.name() + ' (' + count + 'x)'\" /><br/>\
-		<!-- /ko -->\
-		</div>\
-	</div>\
-	<!-- /ko -->");
 }

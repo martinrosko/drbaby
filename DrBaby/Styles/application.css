@@ -193,8 +193,8 @@ body {
   margin: 0px;
   padding: 0px;
   font-size: 14px;
-  font-family: 'Segoe UI SemiLight', sans-serif;
-  /*background: #8db7ce;*/ }
+  height: 100%;
+  font-family: 'Segoe UI SemiLight', sans-serif; }
 
 textarea {
   font-size: 14px;
@@ -205,38 +205,104 @@ div {
   box-sizing: border-box; }
 
 div.main {
-  text-align: center; }
+  text-align: center;
+  height: 100%; }
 
-div.mainPage {
-  background: #8db7ce; }
-  div.mainPage div.clockPanel {
-    border-bottom: solid 1px black;
+div.mainPage, div.statsPage {
+  background: #F5FFED;
+  height: 100%; }
+
+div.mainPage div.clockPanel {
+  border-bottom: solid 1px black;
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  padding: 3px;
+  background: #F5FFED;
+  color: black; }
+  div.mainPage div.clockPanel .shadowBig {
+    text-shadow: 2px 3px 5px #4c888e; }
+  div.mainPage div.clockPanel .shadowMedium {
+    text-shadow: 2px 2px 3px #4c888e; }
+
+div.mainPage div.actionPanel {
+  padding: 20px 10px;
+  border-bottom: solid 1px black;
+  display: flex;
+  flex-direction: row;
+  background: #dbeaca; }
+
+div.mainPage div.activityPanel {
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: #dbeaca;
+  color: #4e673f; }
+  div.mainPage div.activityPanel .clockBig {
+    text-shadow: 2px 2px 3px black; }
+
+div.statsPage div.header {
+  display: flex;
+  flex-direction: row;
+  border-bottom: solid 1px black;
+  padding: 5px;
+  box-sizing: border-box;
+  width: 100%;
+  font-weight: bold;
+  background: #F5FFED;
+  color: black;
+  font-size: 16px;
+  text-align: center;
+  text-shadow: 1px 2px 1px silver; }
+
+div.statsPage div.statsBanner {
+  padding: 5px;
+  border-bottom: solid 1px black;
+  min-height: 60px;
+  width: 100%;
+  background: #FFF3CC;
+  color: black;
+  background-position: center;
+  background-size: cover;
+  position: relative;
+  overflow: hidden; }
+  div.statsPage div.statsBanner h1 {
+    text-align: center;
     width: 100%;
-    text-align: center;
-    font-size: 14px;
-    padding: 3px;
-    background: #F5FFED;
-    color: black; }
-    div.mainPage div.clockPanel .shadowBig {
-      text-shadow: 2px 3px 5px #4c888e; }
-    div.mainPage div.clockPanel .shadowMedium {
-      text-shadow: 2px 2px 3px #4c888e; }
-  div.mainPage div.actionPanel {
-    padding: 20px 10px;
-    border-bottom: solid 1px black;
+    font-size: 16px;
+    font-weight: bold;
+    color: navy; }
+  div.statsPage div.statsBanner span {
+    font-weight: bold; }
+  div.statsPage div.statsBanner img {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    opacity: 0.33;
+    width: 72px; }
+  div.statsPage div.statsBanner .detailBar {
     display: flex;
-    flex-direction: row;
-    background: #dbeaca; }
-  div.mainPage div.activityPanel {
-    padding: 5px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    background: #dbeaca;
-    color: #4e673f; }
-    div.mainPage div.activityPanel .clockBig {
-      text-shadow: 2px 2px 3px black; }
+    flex-direction: row; }
+    div.statsPage div.statsBanner .detailBar .detailCell {
+      flex-grow: 1;
+      font-size: 12px;
+      font-weight: normal; }
+
+.timeLine {
+  position: relative;
+  height: 20px;
+  width: 100%;
+  font-weight: bold;
+  overflow: hidden;
+  border-bottom: solid 1px black;
+  background: #FFFCF4; }
+  .timeLine .timeLineItem {
+    position: absolute;
+    top: 0;
+    height: 20px;
+    opacity: 0.65; }
 
 .clockBig, .clockMedium, .clockSmall {
   font-weight: bold; }
@@ -268,6 +334,7 @@ a.button {
   box-sizing: border-box; }
 
 a.button.big {
+  height: 60px;
   font-size: 32px;
   font-weight: bold;
   margin-bottom: 10px;
@@ -306,34 +373,3 @@ a.button:active {
   left: 60px;
   height: 2px;
   z-index: 1; }
-
-.statsBanner {
-  padding: 5px;
-  border-bottom: solid 1px black;
-  min-height: 60px;
-  width: 100%;
-  font-weight: bold;
-  font-size: 16px;
-  background: #e3fcfc;
-  text-align: center;
-  background-position: center;
-  background-size: cover; }
-  .statsBanner .detailBar {
-    display: flex;
-    flex-direction: row; }
-    .statsBanner .detailBar .detailCell {
-      flex-grow: 1;
-      font-size: 12px;
-      font-weight: normal; }
-
-.timeLine {
-  position: relative;
-  height: 20px;
-  width: 100%;
-  font-weight: bold;
-  overflow: hidden; }
-  .timeLine .timeLineItem {
-    position: absolute;
-    top: 0;
-    height: 20px;
-    opacity: 0.65; }
