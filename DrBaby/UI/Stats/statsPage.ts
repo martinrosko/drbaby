@@ -105,7 +105,7 @@
 				this.nightSleeps().forEach(av => av.updateBaseLine(moment(evening)));
 				this.nightSleepMin(Application.getDurationLabel(this._getMinimumDuration(nightSleeps)));
 				this.nightSleepMax(Application.getDurationLabel(this._getMaximumDuration(nightSleeps)));
-				var	nightSleepDuration = this._getActivitiesLength(nightSleeps);
+				var nightSleepDuration = this._getActivitiesLength(nightSleeps);
 				this.nightSleepAvgDuration(Application.getDurationLabel(Math.round(nightSleepDuration / nightSleeps.length)));
 
 				if (nightSleeps.length > 0) {
@@ -278,23 +278,4 @@
 		</div>\
 	</div>\
 	<!-- /ko -->");
-
-	Resco.Controls.KOEngine.instance.addTemplate("tmplStatsPageOld", "<span data-bind=\"click: loadDay.bind($data, -1)\">Pred</span> ... <span data-bind=\"text: dayLabel()\" /> ... <span data-bind=\"click: loadDay.bind($data, 1)\">Po</span><br />\
-<br />\
-<b>Spanok</b><br/>\
-Celkovo: <span data-bind=\"text: sleepDuration() + ' hod (' + sleepCount() + 'x)'\" /><br/>\
-Denny: <span data-bind=\"text: daySleepDuration() + ' hod (' + daySleepCount() + 'x)'\" /><br/>\
-Nocny: <span data-bind=\"text: nightSleepDuration() + ' hod (' + nightSleepCount() + 'x) - od: ' + firstNightSleepStartedOn() + ' do: ' + lastNightSleepEndedOn()\" /><br/>\
-<br/>\
-<br/>\
-<b>Papanie</b><br/>\
-Celkovo: <span data-bind=\"text: feedingDuration() + ' hod (' + feedingCount() + 'x)'\" /><br/>\
-Priemerna dlzka: <span data-bind=\"text: feedingAvgDuration() + ' min'\" /><br/>\
-Priemerny rozostup: <span data-bind=\"text: feedingAvgDiff() + ' hod'\" /><br/>\
-<br/>\
-<br/>\
-<b>Lieky</b><br/>\
-<!-- ko foreach: doses() -->\
-	<span data-bind=\"text: dose.name() + ' (' + count + 'x)'\" /><br/>\
-<!-- /ko -->");
 }

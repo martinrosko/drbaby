@@ -76,6 +76,91 @@
 </head>
 <body style="background: #8db7ce">
 <!-- BEGIN: Knockout Templates -->
+    <script type="text/html" id="tmplNotePage">
+        <div style="display: flex; flex-direction: column">
+	        <div class="main" style="flex: 1 1 auto">
+		        <textarea style="width: 100%; height: 200px" data-bind="value: text" />
+	        </div>
+	        <div class="main" style="flex: 1 1 auto">
+		        <div class="button big" style="background: #d3ffd6" data-bind="click: finished">
+			        Ulozit
+		        </div>
+		        <br />
+		        <div class="button big" style="" data-bind="click: close">
+			        Zrusit
+		        </div>
+	        </div>
+        </div>
+    </script>
+
+    <script type="text/html" id="tmplStatsPage">
+    <div style="display: flex; flex-direction: row; border-bottom: solid 1px black; padding: 5px; box-sizing: border-box; width: 100%; font-weight: bold; background: #e3fcfc; font-size: 16px; text-align: center">
+		<div class="action" style="flex-grow: 0" data-bind="click: loadDay.bind($data, -1)">&lt;</div>
+		<div style="padding-top: 10px; flex-grow: 1; font-size: 20px" data-bind="text: dayLabel()"></div>
+		<div class="action" style="flex-grow: 0" data-bind="click: loadDay.bind($data, 1)">&gt;</div>
+	</div>
+	<div class="statsBanner" style="color: #1c3578; background-image: url('Images/Day.jpg')">
+		Day Sleep <span data-bind="text: daySleepDuration()" /><br/><br/>
+		<div class="detailBar">
+			<div class="detailCell">Count<br /><span data-bind="text: daySleepCount()" /></div>
+			<div class="detailCell">Avg.duration<br /><span data-bind="text: daySleepAvgDuration()" /></div>
+			<div class="detailCell">Max<br /><span data-bind="text: daySleepMax()" /></div>
+			<div class="detailCell">Min<br /><span data-bind="text: daySleepMin()" /></div>
+		</div>
+	</div>
+	<div class="timeLine" style="background: #FFFCF4">
+		<!-- ko foreach: daySleeps -->
+		<div data-bind="attr: {class: className()}">
+			<div class="timeLineItem indexLine" data-bind="style: { left: Math.round(start() / 7.2) + '%', width: Math.round(duration() / 7.2) + '%'}"></div>
+		</div>
+		<!-- /ko -->
+	</div>
+	<div class="statsBanner" style="color: white; background-image: url('Images/Night.jpg')">
+		Night Sleep  <span data-bind="text: nightSleepDuration()" /><br/><br/>
+		<div class="detailBar">
+			<div class="detailCell">Count<br /><span data-bind="text: nightSleepCount()" /></div>
+			<div class="detailCell">Avg.duration<br /><span data-bind="text: nightSleepAvgDuration()" /></div>
+			<div class="detailCell">Max<br /><span data-bind="text: nightSleepMax()" /></div>
+			<div class="detailCell">Min<br /><span data-bind="text: nightSleepMin()" /></div>
+		</div>
+	</div>
+	<div class="timeLine" style="background: #FFF3CC">
+		<!-- ko foreach: nightSleeps -->
+	    <div data-bind="attr: {class: className()}">
+			<div class="timeLineItem indexLine" data-bind="style: { left: Math.round(start() / 7.2) + '%', width: Math.round(duration() / 7.2) + '%'}"></div>
+		</div>
+		<!-- /ko -->
+	</div>
+	<div class="statsBanner" style="color: black; background-image: url('Images/Feedingbanner.png')">
+		Breastfed <span data-bind="text: feedingCount()" /><br/><br/>
+		<div class="detailBar">
+			<div class="detailCell">Avg.duration<br /><span data-bind="text: feedingAvgDuration()" /></div>
+			<div class="detailCell">Avg.gap<br /><span data-bind="text: feedingAvgDiff()" /></div>
+			<div class="detailCell">Max<br /><span data-bind="text: feedingMax()" /></div>
+			<div class="detailCell">Min<br /><span data-bind="text: feedingMin()" /></div>
+		</div>
+	</div>
+	<div class="timeLine">
+		<div class="timeLineItem" style="width: 50%; background: #FFFCF4; opacity: 1"></div>
+		<div class="timeLineItem" style="left: 50%; width: 50%; background: #FFF3CC; opacity: 1"></div>
+		<!-- ko foreach: feedings -->
+		<div data-bind="attr: {class: className()}">
+			<div class="timeLineItem indexLine" data-bind="style: { left: Math.round(start() / 14.4) + '%', width: Math.round(duration() / 14.4) + '%'}"></div>
+		</div>
+		<!-- /ko -->
+	</div>
+	<!-- ko if: doses().length > 0 -->
+	<div class="statsBanner" style="color: black; background-image: url('Images/Medicine.png')">
+		Medicine<br/><br/>
+		<div style="width: 100%; font-size: 12px; font-weight: normal; text-align: left">
+		<!-- ko foreach: doses() -->
+			<span data-bind="text: dose.name() + ' (' + count + 'x)'" /><br/>
+		<!-- /ko -->
+		</div>
+	</div>
+	<!-- /ko -->
+    </script>
+
     <script type="text/html" id="tmplActivityInfoBubble">
         <div data-bind="attr: {class: className()}">
             <div class="indexLine" data-bind="style: {bottom: (start() + (duration() / 2)) + 'px', width: (bounds.left() - 60) + 'px'}"></div>
@@ -349,23 +434,6 @@
         <!-- ko if: activity.quality() !== undefined -->
 	        <span style="font-size: 10px" data-bind="text: 'Quality: ' + DrBaby.Model.SleepQuality[activity.quality()]" />
         <!-- /ko -->    
-    </script>
-
-    <script type="text/html" id="tmplNotePage">
-        <div style="display: flex; flex-direction: column">
-	        <div class="main" style="flex: 1 1 auto">
-		        <textarea style="width: 100%; height: 200px" data-bind="value: text" />
-	        </div>
-	        <div class="main" style="flex: 1 1 auto">
-		        <div class="button big" style="background: #d3ffd6" data-bind="click: finished">
-			        Ulozit
-		        </div>
-		        <br />
-		        <div class="button big" style="" data-bind="click: close">
-			        Zrusit
-		        </div>
-	        </div>
-        </div>
     </script>
 
 <!-- END: Knockout Templates -->

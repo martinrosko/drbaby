@@ -58,6 +58,7 @@
     <Content Include="UI\Main\feedingView.tmpl.html" />
     <Content Include="UI\Main\activityView.tmpl.html" />
     <Content Include="UI\Note\notePage.tmpl.html" />
+    <Content Include="UI\Stats\statsPage.tmpl.html" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
